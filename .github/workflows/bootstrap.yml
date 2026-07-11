@@ -1,6 +1,7 @@
 name: Establish Canonical V0.3.1 Baseline
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
