@@ -1,0 +1,46 @@
+name: Establish Canonical V0.3.1 Baseline
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/bootstrap.yml
+
+permissions:
+  contents: write
+
+jobs:
+  establish-baseline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Reconstruct and verify canonical archive
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .bootstrap/source.b64.part* | base64 --decode > /tmp/printpal-canonical.zip
+          echo "40ef7ec1b94096dae9f8d4a757e78df52a55ca02487713ce0b3adcda7643a583  /tmp/printpal-canonical.zip" | sha256sum --check --strict
+          mkdir -p /tmp/printpal-source
+          unzip -q /tmp/printpal-canonical.zip -d /tmp/printpal-source
+
+      - name: Replace bootstrap files with canonical source
+        shell: bash
+        run: |
+          set -euo pipefail
+          find . -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -a /tmp/printpal-source/. .
+
+      - name: Commit canonical reconciled baseline
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add --all
+          git commit -m "chore: establish canonical V0.3.1 reconciled baseline"
+          git push origin main
