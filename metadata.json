@@ -1,0 +1,8 @@
+{
+  "name": "PrintPal 3D V0.3 Lean Product Simulation Build",
+  "description": "AI-assisted 3D printing workflow utility prototype for pre-print planning, material context review, text-only failure review, lab-note export, and advisory documentation support.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
