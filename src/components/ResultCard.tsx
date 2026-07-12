@@ -1,204 +1,135 @@
-import React from 'react';
-import { PrintPlanningCard, PrintPlanningFormData } from '../types';
-import { Copy, Check, Info, AlertTriangle, ListChecks, Wrench, Bookmark, Lightbulb } from 'lucide-react';
+import React from "react";
+import { Check, Copy } from "lucide-react";
+import type { PlanContent } from "../domain/types";
+import type { PrintPlanningEnvelope, PrintPlanningFormData } from "../types";
 
 interface ResultCardProps {
-  card: PrintPlanningCard;
+  card: PlanContent;
   formData: PrintPlanningFormData;
+  envelope?: PrintPlanningEnvelope | null;
 }
 
-export function ResultCard({ card, formData }: ResultCardProps) {
-  const [copied, setCopied] = React.useState(false);
-  const [labNoteCopied, setLabNoteCopied] = React.useState(false);
+const ORIGIN_LABELS: Record<NonNullable<PrintPlanningEnvelope>["origin"], string> = {
+  AI_ASSISTED: "AI-Assisted",
+  RULES_BASED_FALLBACK: "Rules-Based Fallback",
+  USER_AUTHORED: "User-Authored",
+  AI_ASSISTED_USER_EDITED: "AI-Assisted · User Edited",
+};
 
-  const handleCopy = () => {
-    const textToCopy = `
-PrintPal 3D - Planning Card
-
---- 1. Quick Read ---
-${card.quickRead}
-
---- 2. Printer Technology Considerations ---
-${card.printerTechConsiderations}
-
---- 3. Material / Resin Watch-Outs ---
-${card.materialWatchOuts}
-
---- 4. Risk Flags ---
-${card.riskFlags.map(r => '- ' + r).join('\n')}
-
---- 5. Pre-Print Readiness Checklist ---
-${card.readinessChecklist.map(r => '- ' + r).join('\n')}
-
---- 6. Post-Print / Finishing Notes ---
-${card.postPrintNotes.map(r => '- ' + r).join('\n')}
-
---- 7. What To Document For Next Time ---
-${card.whatToDocument.map(r => '- ' + r).join('\n')}
-
---- 8. Assumptions And Gaps ---
-${card.assumptionsAndGaps.map(r => '- ' + r).join('\n')}
-
---- 9. Friendly Note ---
-${card.friendlyNote}
-
-**
-PrintPal 3D is a planning and documentation aid only. Always verify printer settings, material handling, post-processing, ventilation, and safety practices against your printer manual, slicer documentation, manufacturer guidance, Technical Data Sheets, and Safety Data Sheets.
-**
-    `.trim();
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
-  const handleCopyLabNote = () => {
-    const textToCopy = `
-LAB NOTE - ${formData.projectName || 'Untitled'}
-Date: [   ]
-
-Settings:
-- Tech: ${formData.printerTech}
-- Printer: ${formData.printerName || 'Unspecified'}
-- Material: ${formData.material}
-- Purpose: ${formData.purpose}
-- Priority: ${formData.priority}
-- Known Concerns: ${formData.concerns.length ? formData.concerns.join(', ') : 'None'}
-
-Assumptions to Verify (PrintPal):
-${card.assumptionsAndGaps.map(g => '- ' + g).join('\n')}
-
-To Document Post-Print (PrintPal):
-${card.whatToDocument.map(d => '- ' + d).join('\n')}
-
-Outcome Notes:
-[   ]
-
-Next Test Refinements:
-[   ]
-    `.trim();
-
-    navigator.clipboard.writeText(textToCopy).then(() => {
-      setLabNoteCopied(true);
-      setTimeout(() => setLabNoteCopied(false), 2000);
-    });
-  };
-
-  const SectionHeading = ({ children, num }: { children: React.ReactNode, num: string }) => (
-    <h3 className="text-xs font-bold text-[#4B7270] uppercase tracking-wider mb-2">
-      <span className="font-mono">{num}.</span> {children}
-    </h3>
+function ListSection({ title, items, number }: { title: string; items: string[]; number: string }) {
+  return (
+    <section>
+      <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#4B7270]"><span className="font-mono">{number}.</span> {title}</h3>
+      {items.length > 0 ? (
+        <ul className="ml-4 list-disc space-y-1.5 text-xs leading-relaxed text-[#333333]">
+          {items.map((item, index) => <li key={`${title}-${index}`}>{item}</li>)}
+        </ul>
+      ) : (
+        <p className="text-xs italic text-[#8A8A8A]">None recorded.</p>
+      )}
+    </section>
   );
+}
+
+export function ResultCard({ card, formData, envelope }: ResultCardProps) {
+  const [copied, setCopied] = React.useState(false);
+
+  const handleCopy = async () => {
+    const textToCopy = `
+PrintPal 3D - Planning View
+Project: ${formData.projectName || "Untitled"}
+Origin: ${envelope ? ORIGIN_LABELS[envelope.origin] : "Not recorded"}
+Prompt Version: ${envelope?.promptVersion || "Not applicable"}
+Rules Version: ${envelope?.rulesVersion || "Not applicable"}
+
+1. Objective Summary
+${card.objectiveSummary}
+
+2. Readiness Considerations
+${card.readinessConsiderations.map((item) => `- ${item}`).join("\n")}
+
+3. Printer Watch-Outs
+${card.printerWatchOuts.map((item) => `- ${item}`).join("\n")}
+
+4. Material Watch-Outs
+${card.materialWatchOuts.map((item) => `- ${item}`).join("\n")}
+
+5. Assumptions
+${card.assumptions.map((item) => `- ${item}`).join("\n")}
+
+6. Missing Information
+${card.missingInformation.map((item) => `- ${item}`).join("\n")}
+
+7. Source Checks
+${card.sourceChecks.map((item) => `- ${item}`).join("\n")}
+
+8. Variables To Record
+${card.variablesToRecord.map((item) => `- ${item}`).join("\n")}
+
+9. Expected Outcome Criteria
+${card.expectedOutcomeCriteria.map((item) => `- ${item}`).join("\n")}
+
+PrintPal 3D is a planning and documentation aid only. Verify printer settings, material handling, post-processing, ventilation, and safety practices against the applicable printer manual, slicer documentation, manufacturer guidance, Technical Data Sheets, and Safety Data Sheets.
+    `.trim();
+
+    await navigator.clipboard.writeText(textToCopy);
+    setCopied(true);
+    window.setTimeout(() => setCopied(false), 2000);
+  };
 
   return (
-    <div className="w-full h-full flex flex-col">
-      <div className="p-4 border-b border-[#E2E1DB] flex justify-between items-center shrink-0">
-        <div className="flex items-center gap-2">
-          <div className="w-2 h-2 rounded-full bg-[#4B7270]"></div>
-          <h2 className="text-sm font-bold uppercase tracking-wider text-[#333333]">Print Planning Card</h2>
+    <div className="flex h-full w-full flex-col">
+      <header className="flex shrink-0 flex-col gap-3 border-b border-[#E2E1DB] p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#4B7270]" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-[#333333]">Print Planning View</h2>
+          {envelope && <span className="rounded-full border border-[#C9DAD7] bg-[#F1F7F6] px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-[#4B7270]">{ORIGIN_LABELS[envelope.origin]}</span>}
         </div>
-        <button
-          type="button"
-          onClick={handleCopy}
-          className="text-[10px] border border-[#E2E1DB] px-3 py-1.5 rounded flex items-center gap-1 hover:bg-[#F8F7F2] focus:outline-none focus:ring-1 focus:ring-[#4B7270] focus:border-[#4B7270] font-bold uppercase text-[#333333]"
-        >
-          {copied ? 'Copied' : 'Copy Card Text'}
+        <button type="button" onClick={handleCopy} className="inline-flex items-center justify-center gap-2 rounded border border-[#E2E1DB] px-3 py-2 text-[10px] font-bold uppercase text-[#333333] hover:bg-[#F8F7F2]">
+          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+          {copied ? "Copied" : "Copy Planning Text"}
         </button>
-      </div>
-      
-      <div className="flex-1 p-6 space-y-6 text-xs leading-relaxed overflow-y-auto w-full text-[#333333] flex flex-col">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="space-y-4">
-            <div>
-              <SectionHeading num="01">Quick Read</SectionHeading>
-              <p>{card.quickRead}</p>
-            </div>
-            
-            <div>
-              <SectionHeading num="02">Technology Considerations</SectionHeading>
-              <p>{card.printerTechConsiderations}</p>
-            </div>
-            
-            <div>
-              <SectionHeading num="03">Material Watch-Outs</SectionHeading>
-              <p>{card.materialWatchOuts}</p>
-            </div>
-            
-            <div>
-              <SectionHeading num="04">Risk Flags</SectionHeading>
-              <ul className="list-disc ml-4 space-y-1 italic">
-                {card.riskFlags.map((val, idx) => <li key={idx}>{val}</li>)}
-              </ul>
-            </div>
-          </div>
-          
-          <div className="space-y-4">
-            <div>
-              <SectionHeading num="05">Readiness Checklist</SectionHeading>
-              <div className="space-y-1">
-                {card.readinessChecklist.map((val, idx) => (
-                  <div key={idx} className="flex items-start gap-2">
-                    <input type="checkbox" className="rounded border-[#E2E1DB] text-[#4B7270] focus:ring-[#4B7270] mt-0.5" />
-                    <span>{val}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div>
-              <SectionHeading num="06">Post-Print / Finishing</SectionHeading>
-              <ul className="list-disc ml-4 space-y-1">
-                {card.postPrintNotes.map((val, idx) => <li key={idx}>{val}</li>)}
-              </ul>
-            </div>
-            
-            <div>
-              <SectionHeading num="07">To Document</SectionHeading>
-              <ul className="list-disc ml-4 space-y-1">
-                {card.whatToDocument.map((val, idx) => <li key={idx}>{val}</li>)}
-              </ul>
-            </div>
-            
-            <div>
-              <SectionHeading num="08">Assumptions & Gaps</SectionHeading>
-              <ul className="list-disc ml-4 space-y-1">
-                {card.assumptionsAndGaps.map((val, idx) => <li key={idx}>{val}</li>)}
-              </ul>
-            </div>
+      </header>
 
-            <div>
-              <SectionHeading num="09">Friendly Note</SectionHeading>
-              <p className="italic">{card.friendlyNote}</p>
-            </div>
+      <div className="flex-1 space-y-6 overflow-y-auto p-5 text-xs leading-relaxed text-[#333333] md:p-6">
+        {envelope && envelope.warnings.length > 0 && (
+          <div className="rounded border border-[#E9D9B7] bg-[#FFFCF0] p-4 text-xs leading-relaxed text-[#7D6B45]" role="status">
+            <strong className="mb-1 block uppercase tracking-wider">Generation Notice</strong>
+            {envelope.warnings.map((warning) => <p key={warning}>{warning}</p>)}
+          </div>
+        )}
+
+        <section>
+          <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-[#4B7270]"><span className="font-mono">01.</span> Objective Summary</h3>
+          <p className="text-sm leading-relaxed">{card.objectiveSummary}</p>
+        </section>
+
+        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div className="space-y-6">
+            <ListSection number="02" title="Readiness Considerations" items={card.readinessConsiderations} />
+            <ListSection number="03" title="Printer Watch-Outs" items={card.printerWatchOuts} />
+            <ListSection number="04" title="Material Watch-Outs" items={card.materialWatchOuts} />
+            <ListSection number="05" title="Assumptions" items={card.assumptions} />
+          </div>
+          <div className="space-y-6">
+            <ListSection number="06" title="Missing Information" items={card.missingInformation} />
+            <ListSection number="07" title="Source Checks" items={card.sourceChecks} />
+            <ListSection number="08" title="Variables To Record" items={card.variablesToRecord} />
+            <ListSection number="09" title="Expected Outcome Criteria" items={card.expectedOutcomeCriteria} />
           </div>
         </div>
 
-        <div className="mt-8 mb-4 border border-[#E2E1DB] rounded p-4 bg-[#F8F7F2]">
-           <div className="flex justify-between items-center mb-3">
-             <h3 className="text-xs font-bold text-[#333333] uppercase">Export to Lab Note</h3>
-             <button
-                type="button"
-                onClick={handleCopyLabNote}
-                className="text-[10px] border border-[#E2E1DB] px-3 py-1.5 rounded flex items-center gap-1 bg-white hover:bg-[#F0EEE6] focus:outline-none focus:ring-1 focus:ring-[#4B7270] focus:border-[#4B7270] font-bold uppercase text-[#333333]"
-              >
-                {labNoteCopied ? 'Copied to Clipboard' : 'Copy Lab Note'}
-              </button>
-           </div>
-           <p className="text-[#8A8A8A] text-[10px]">Generates a plain-text markdown block for your physical or digital lab notebook, pre-filled with this session's configuration and gaps.</p>
+        <div className="rounded border border-[#F5EAD2] bg-[#FFFCF0] p-3 text-[9px] leading-relaxed text-[#7D6B45]">
+          <strong>SAFETY NOTE:</strong> PrintPal 3D is a planning and documentation aid only. Verify printer settings, material handling, post-processing, ventilation, and safety practices against the applicable printer manual, slicer documentation, manufacturer guidance, Technical Data Sheets, and Safety Data Sheets.
         </div>
-        
-        <div className="pt-4 border-t border-[#E2E1DB] flex flex-col gap-2 mt-auto">
-          <div className="bg-[#FFFCF0] border border-[#F5EAD2] p-3 rounded text-[9px] leading-tight text-[#7D6B45]">
-            <p><strong>SAFETY NOTE:</strong> PrintPal 3D is a planning and documentation aid only. Always verify printer settings, material handling, post-processing, ventilation, and safety practices against your printer manual, slicer documentation, manufacturer guidance, Technical Data Sheets, and Safety Data Sheets.</p>
-          </div>
-          <div className="flex justify-between items-end mt-2">
-            <div className="text-[10px] italic text-[#8A8A8A]">"Planning is the first layer of every successful print."</div>
-            <div className="text-right">
-              <p className="text-[10px] font-bold uppercase text-[#4B7270]">Planning Utility</p>
-            </div>
-          </div>
-        </div>
+
+        {envelope && (
+          <dl className="grid grid-cols-1 gap-3 border-t border-[#E2E1DB] pt-4 text-[9px] text-[#8A8A8A] sm:grid-cols-3">
+            <div><dt className="font-bold uppercase tracking-widest">Generated</dt><dd className="mt-1">{new Date(envelope.generatedAt).toLocaleString()}</dd></div>
+            <div><dt className="font-bold uppercase tracking-widest">Prompt</dt><dd className="mt-1">{envelope.promptVersion || "Not applicable"}</dd></div>
+            <div><dt className="font-bold uppercase tracking-widest">Rules</dt><dd className="mt-1">{envelope.rulesVersion || "Not applicable"}</dd></div>
+          </dl>
+        )}
       </div>
     </div>
   );
