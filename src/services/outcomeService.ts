@@ -152,7 +152,16 @@ export async function saveOutcomeForAttempt(
       throw new Error("The selected Attempt does not belong to the selected Project.");
     }
 
-    const outcome = buildOutcome(project, input, now);
+    const preservedCompletedAt =
+      input.completedAt ??
+      currentAttempt.outcome?.completedAt ??
+      currentAttempt.completedAt ??
+      now;
+    const outcome = buildOutcome(
+      project,
+      { ...input, completedAt: preservedCompletedAt },
+      now,
+    );
     const nextAttemptStatus = resolveOutcomeAttemptStatus(
       currentAttempt.status,
       outcome.status,
@@ -162,7 +171,7 @@ export async function saveOutcomeForAttempt(
       ...currentAttempt,
       outcome,
       status: nextAttemptStatus,
-      completedAt: outcome.completedAt ?? currentAttempt.completedAt ?? now,
+      completedAt: currentAttempt.completedAt ?? outcome.completedAt ?? now,
       updatedAt: now,
     });
 
