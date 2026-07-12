@@ -1,8 +1,8 @@
 import { z } from "zod";
-import { isoDateTimeSchema, outputOriginSchema, stringListSchema } from "./commonSchema";
+import { isoDateTimeSchema, nonEmptyTextSchema, outputOriginSchema, stringListSchema } from "./commonSchema";
 
-export const planSchema = z.object({
-  objectiveSummary: z.string().trim().min(1),
+export const planContentSchema = z.object({
+  objectiveSummary: nonEmptyTextSchema,
   readinessConsiderations: stringListSchema,
   printerWatchOuts: stringListSchema,
   materialWatchOuts: stringListSchema,
@@ -11,6 +11,9 @@ export const planSchema = z.object({
   sourceChecks: stringListSchema,
   variablesToRecord: stringListSchema,
   expectedOutcomeCriteria: stringListSchema,
+});
+
+export const planSchema = planContentSchema.extend({
   userEdits: z.string().trim().optional(),
   origin: outputOriginSchema,
   promptVersion: z.string().trim().optional(),
@@ -18,4 +21,5 @@ export const planSchema = z.object({
   generatedAt: isoDateTimeSchema,
 });
 
+export type PlanContent = z.infer<typeof planContentSchema>;
 export type Plan = z.infer<typeof planSchema>;
