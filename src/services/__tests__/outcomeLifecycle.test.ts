@@ -11,6 +11,7 @@ import {
 
 const createdAt = "2026-07-12T12:00:00.000Z";
 const outcomeAt = "2026-07-12T13:00:00.000Z";
+const editedAt = "2026-07-12T15:00:00.000Z";
 const projectId = "11111111-1111-4111-8111-111111111111";
 const attemptId = "22222222-2222-4222-8222-222222222222";
 
@@ -122,5 +123,30 @@ describe("governed Outcome lifecycle transitions", () => {
     expect(() =>
       resolveOutcomeAttemptStatus("OUTCOME_RECORDED", "NOT_YET_EVALUATED"),
     ).toThrow("Cannot change an Attempt in OUTCOME_RECORDED status back");
+  });
+
+  it("preserves the original completion timestamp when an Outcome is edited later", async () => {
+    await saveOutcomeForAttempt(
+      db,
+      projectId,
+      attemptId,
+      makeOutcomeInput("SUCCESSFUL"),
+      outcomeAt,
+    );
+
+    const editedInput = makeOutcomeInput("PARTIALLY_SUCCESSFUL");
+    editedInput.observedResult = "The Outcome note was corrected after review.";
+    const edited = await saveOutcomeForAttempt(
+      db,
+      projectId,
+      attemptId,
+      editedInput,
+      editedAt,
+    );
+
+    expect(edited.outcome.completedAt).toBe(outcomeAt);
+    expect(edited.attempt.completedAt).toBe(outcomeAt);
+    expect(edited.attempt.updatedAt).toBe(editedAt);
+    expect(edited.outcome.summary).toBe("The Outcome note was corrected after review.");
   });
 });
