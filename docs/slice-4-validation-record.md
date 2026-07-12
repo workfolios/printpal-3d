@@ -4,6 +4,15 @@
 
 Planning Record Integration only. Outcomes, duplication, comparison, next-test planning, export, import, authentication, cloud sync, external database, deployment, and AI Studio modification remain deferred.
 
+## Validation Environment
+
+- GitHub Actions Ubuntu 24.04 runner.
+- Node.js 22.
+- Vitest 3.2.7.
+- Playwright Chromium.
+- Desktop Chrome device profile.
+- Pixel 7 mobile device profile.
+
 ## Validation Commands
 
 - `npm run lint`
@@ -12,7 +21,7 @@ Planning Record Integration only. Outcomes, duplication, comparison, next-test p
 - `npm run check`
 - `npm run test:e2e`
 
-## Local Static And Unit Results
+## Static, Unit, Persistence, And Build Results
 
 - TypeScript validation: passed.
 - Domain-schema tests: 15 passed.
@@ -23,9 +32,15 @@ Planning Record Integration only. Outcomes, duplication, comparison, next-test p
 - Vite production frontend build: passed.
 - Bundled Express server build: passed.
 
-## Required Browser Acceptance
+## Browser Acceptance Results
 
-The final GitHub Actions acceptance run must verify at desktop and Pixel 7 mobile Chromium viewports that a user can:
+Desktop Chromium: passed.
+
+Pixel 7 mobile Chromium: passed.
+
+Total Playwright acceptance tests: 2 passed.
+
+The accepted browser scenario verified that a user can:
 
 1. Create a Project and Attempt 1.
 2. Open the saved planning workflow.
@@ -47,6 +62,13 @@ The final GitHub Actions acceptance run must verify at desktop and Pixel 7 mobil
 - User-authored Plan creation remains available without AI.
 - Existing Material Compass and Failure Review behavior remains outside the modified planning contract.
 
+## Accepted Validation Reference
+
+- Successful pull-request workflow run: `29191705320`.
+- Validated branch head: `9835818a3c8f170ff90d745ac72ca835ef494aba`.
+- Validation artifact: `printpal-validation-and-source`.
+- Artifact digest: `sha256:26b01407254a1fe0a52efca567a5b22cda6ee2e0f8af6d28df5c50cf50f63062`.
+
 ## Final Status
 
-Pending final pull-request CI and browser acceptance before checkpoint promotion.
+All Slice Four static, unit, persistence, build, desktop-browser, mobile-browser, AI-failure, and safety-validation gates passed. The implementation is eligible for pull-request acceptance and checkpoint promotion.
