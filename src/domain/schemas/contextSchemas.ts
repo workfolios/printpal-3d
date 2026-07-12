@@ -30,6 +30,8 @@ export const processContextSchema = z.object({
   slicerVersion: z.string().trim().optional(),
   profileReference: z.string().trim().optional(),
   fileOrDesignReference: z.string().trim().optional(),
+  plannedAttemptDescription: z.string().trim().optional(),
+  knownConcerns: stringListSchema,
   settingsSnapshotOrNotes: z.string().trim().optional(),
   plannedVariables: stringListSchema,
   environmentalObservations: z.string().trim().optional(),
