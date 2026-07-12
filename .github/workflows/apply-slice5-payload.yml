@@ -7,13 +7,18 @@ on:
     paths:
       - .github/workflows/apply-slice5-payload.yml
       - .slice5/payload.b64
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   apply:
-    if: github.actor != 'github-actions[bot]'
+    if: github.actor != 'github-actions[bot]' && (github.event_name == 'push' || github.head_ref == 'phase3d/slice-5-outcome-attempt-duplication')
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Slice Five branch
