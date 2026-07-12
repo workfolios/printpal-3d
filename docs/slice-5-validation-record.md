@@ -30,7 +30,8 @@ Outcome Capture and Attempt Duplication only. Comparison, AI interpretation, nex
 - Planning-service and safety tests: 8 passed.
 - Save-coordination tests: 2 passed.
 - Outcome and duplication tests: 11 passed.
-- Total Vitest tests: 53 passed.
+- Outcome lifecycle and completion-timestamp tests: 4 passed.
+- Total Vitest tests: 57 passed.
 - Vite production frontend build: passed.
 - Bundled Express server build: passed.
 
@@ -61,8 +62,11 @@ The accepted browser scenario verified that a user can:
 
 - Outcome Capture remains fully usable without Gemini or another AI service.
 - Outcome criterion results must match the current Project success criteria exactly.
-- Evaluated Outcomes transition the Attempt to `OUTCOME_RECORDED`.
-- A not-yet-evaluated Outcome transitions the Attempt to `PRINTED`.
+- Outcome persistence validates every required Attempt lifecycle hop through `canTransitionAttemptStatus`.
+- Draft records progress through Planned and Printed before an evaluated Outcome reaches `OUTCOME_RECORDED`.
+- A not-yet-evaluated Outcome stops at `PRINTED`.
+- Invalid lifecycle regressions, including `OUTCOME_RECORDED -> PRINTED`, are rejected.
+- Editing an existing Outcome preserves the original Outcome and Attempt completion timestamps while advancing `updatedAt`.
 - Attempt duplication creates a new identifier, attempt number, and timestamps.
 - The child Attempt preserves `parentAttemptId` and the Project attempt index.
 - Applicable printer, material, process, and source context is inherited and editable.
@@ -70,13 +74,23 @@ The accepted browser scenario verified that a user can:
 - The child Attempt does not copy the source Plan, Outcome, completed date, comparison IDs, or next-test reference.
 - Duplication and Project-index updates occur in one IndexedDB transaction.
 
+## Automated Review Corrections
+
+Automated pull-request review identified three material lifecycle and record-integrity risks. Before acceptance, the implementation was corrected to:
+
+- Route Outcome status changes through the governed lifecycle transition table.
+- Reject invalid Outcome lifecycle regressions.
+- Preserve original completion timestamps when users later edit Outcome content.
+
+Focused tests cover Draft-to-evaluated progression, Draft-to-not-yet-evaluated progression, invalid regression rejection, and completion-timestamp preservation.
+
 ## Accepted Validation Reference
 
-- Successful pull-request workflow run: `29198230980`.
-- Validated branch head: `56a96b5775780bcfe1e8ddbfe7c8b25226981378`.
+- Successful pull-request workflow run: `29198804777`.
+- Validated branch head: `f8cae21f3104f30b7bb50ee2f64509f2e93ebc03`.
 - Validation artifact: `printpal-validation-and-source`.
-- Artifact digest: `sha256:31bc29158d52fba4857a51056a85cfef285c2604e1ff65c831d06fa6fe6bdeeb`.
+- Artifact digest: `sha256:bf327778c4899dc961f784badab39352b966c3ff59ab7e4e86c390c2bb53a761`.
 
 ## Final Status
 
-All Slice Five static, unit, persistence, relationship-integrity, build, desktop-browser, and mobile-browser gates passed. The implementation is eligible for pull-request acceptance and checkpoint promotion.
+All Slice Five static, unit, persistence, lifecycle, timestamp-preservation, relationship-integrity, build, desktop-browser, and mobile-browser gates passed. The implementation is eligible for pull-request acceptance and checkpoint promotion.
