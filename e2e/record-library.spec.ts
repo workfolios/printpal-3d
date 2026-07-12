@@ -6,7 +6,7 @@ async function expectNoHorizontalOverflow(page: import("@playwright/test").Page)
     .toBe(true);
 }
 
-test("creates, retrieves, filters, archives, and restores a project", async ({ page }) => {
+test("creates a persistent planning record, retrieves it, and manages the project lifecycle", async ({ page }) => {
   await page.goto("/");
 
   await expect(page.getByRole("heading", { name: "Record Library" })).toBeVisible();
@@ -33,6 +33,30 @@ test("creates, retrieves, filters, archives, and restores a project", async ({ p
   await expect(page.getByText("Attempt 1 · DRAFT")).toBeVisible();
   await expect(page.getByText("PETG", { exact: true }).first()).toBeVisible();
   await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("button", { name: "Create Saved Plan" }).first().click();
+  await expect(page.getByText("Saved Planning Record")).toBeVisible();
+  await page.getByRole("button", { name: "Generate Planning View" }).click();
+
+  await expect(page.getByRole("heading", { name: "Editable Plan" })).toBeVisible();
+  await expect(page.getByText("Rules-Based Fallback", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Gemini was unavailable|planning service could not be reached/)).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByLabel(/Objective Summary/).fill("User-refined objective for the PETG cable clip.");
+  await page.getByLabel("User Edit Note").fill("Clarified the target outcome before printing.");
+  await page.getByRole("button", { name: "Save Plan" }).click();
+  await expect(page.getByText("Saved Locally", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Attempt Detail" }).click();
+  await expect(page.getByText("User-refined objective for the PETG cable clip.")).toBeVisible();
+  await expect(page.getByText("Rules-Based Fallback", { exact: true })).toBeVisible();
+
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Record Library" })).toBeVisible();
+  await page.getByPlaceholder("Search title, purpose, or tag").fill("PETG Cable Clip");
+  await page.getByRole("button", { name: "Open Record" }).click();
+  await expect(page.getByText("User-refined objective for the PETG cable clip.")).toBeVisible();
 
   await page.getByRole("button", { name: "Record Library" }).click();
   await expect(page.getByRole("heading", { name: "PETG Cable Clip" })).toBeVisible();
