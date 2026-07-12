@@ -16,6 +16,10 @@ export class AttemptRepository {
     return this.db.attempts.get(attemptId);
   }
 
+  async listAll(): Promise<Attempt[]> {
+    return this.db.attempts.orderBy("updatedAt").reverse().toArray();
+  }
+
   async listByProject(projectId: string): Promise<Attempt[]> {
     return this.db.attempts.where("projectId").equals(projectId).sortBy("attemptNumber");
   }
