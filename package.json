@@ -24,7 +24,9 @@
     "express": "^4.21.2",
     "dotenv": "^17.2.3",
     "motion": "^12.23.24",
-    "zod": "^3.25.76"
+    "zod": "^3.25.76",
+    "dexie": "^4.4.4",
+    "dexie-react-hooks": "^4.4.0"
   },
   "devDependencies": {
     "@types/node": "^22.14.0",
@@ -35,6 +37,7 @@
     "typescript": "~5.8.2",
     "vite": "^6.2.3",
     "@types/express": "^4.17.21",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "fake-indexeddb": "^6.2.5"
   }
 }
