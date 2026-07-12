@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -22,6 +22,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
       - name: Validate types, tests, and production build
         shell: bash
         run: |
@@ -30,10 +32,24 @@ jobs:
           status=$?
           cat validation.log
           exit $status
-      - name: Preserve validation log
+      - name: Validate desktop and mobile record workflow
+        shell: bash
+        env:
+          CI: true
+        run: |
+          set +e
+          npm run test:e2e > e2e.log 2>&1
+          status=$?
+          cat e2e.log
+          exit $status
+      - name: Preserve validation logs
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: printpal-validation-log
-          path: validation.log
-          if-no-files-found: error
+          name: printpal-validation-logs
+          path: |
+            validation.log
+            e2e.log
+            playwright-report/
+            test-results/
+          if-no-files-found: warn
