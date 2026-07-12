@@ -39,7 +39,7 @@ test("creates a persistent planning record, retrieves it, and manages the projec
   await page.getByRole("button", { name: "Generate Planning View" }).click();
 
   await expect(page.getByRole("heading", { name: "Editable Plan" })).toBeVisible();
-  await expect(page.getByText("Rules-Based Fallback", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rules-Based Fallback", { exact: true }).first()).toBeVisible();
   await expect(page.getByText(/Gemini was unavailable|planning service could not be reached/)).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
@@ -50,7 +50,7 @@ test("creates a persistent planning record, retrieves it, and manages the projec
 
   await page.getByRole("button", { name: "Attempt Detail" }).click();
   await expect(page.getByText("User-refined objective for the PETG cable clip.")).toBeVisible();
-  await expect(page.getByText("Rules-Based Fallback", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rules-Based Fallback", { exact: true }).first()).toBeVisible();
 
   await page.reload();
   await expect(page.getByRole("heading", { name: "Record Library" })).toBeVisible();
