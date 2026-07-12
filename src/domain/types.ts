@@ -4,7 +4,7 @@ export type { MaterialContext, PrinterContext, ProcessContext } from "./schemas/
 export type { FullBackupPayload, PrintPalExportEnvelope, ProjectExportPayload } from "./schemas/exportSchema";
 export type { NextTestPlan } from "./schemas/nextTestPlanSchema";
 export type { Outcome, SuccessCriterionResult } from "./schemas/outcomeSchema";
-export type { Plan } from "./schemas/planSchema";
+export type { Plan, PlanContent } from "./schemas/planSchema";
 export type { Project } from "./schemas/projectSchema";
 export type { SourceReference } from "./schemas/sourceReferenceSchema";
 export type { AttemptStatus, ProjectStatus } from "./lifecycle";

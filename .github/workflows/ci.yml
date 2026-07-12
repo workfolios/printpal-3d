@@ -42,14 +42,26 @@ jobs:
           status=$?
           cat e2e.log
           exit $status
-      - name: Preserve validation logs
+      - name: Package governed source snapshot
+        if: always()
+        shell: bash
+        run: |
+          zip -r printpal-source-snapshot.zip . \
+            -x '.git/*' \
+            -x 'node_modules/*' \
+            -x 'dist/*' \
+            -x 'playwright-report/*' \
+            -x 'test-results/*' \
+            -x 'printpal-source-snapshot.zip'
+      - name: Preserve validation logs and source snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: printpal-validation-logs
+          name: printpal-validation-and-source
           path: |
             validation.log
             e2e.log
             playwright-report/
             test-results/
+            printpal-source-snapshot.zip
           if-no-files-found: warn

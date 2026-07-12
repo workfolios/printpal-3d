@@ -1,3 +1,6 @@
+import type { ApiResponseEnvelope } from "./domain/schemas/apiSchema";
+import type { PlanContent } from "./domain/schemas/planSchema";
+
 export interface PrintPlanningFormData {
   projectName: string;
   printGoal: string;
@@ -8,19 +11,12 @@ export interface PrintPlanningFormData {
   priority: string;
   concerns: string[];
   notes: string;
+  successCriteria?: string[];
+  sourceReferenceSummaries?: string[];
 }
 
-export interface PrintPlanningCard {
-  quickRead: string;
-  printerTechConsiderations: string;
-  materialWatchOuts: string;
-  riskFlags: string[];
-  readinessChecklist: string[];
-  postPrintNotes: string[];
-  whatToDocument: string[];
-  assumptionsAndGaps: string[];
-  friendlyNote: string;
-}
+export type PrintPlanningCard = PlanContent;
+export type PrintPlanningEnvelope = ApiResponseEnvelope<PlanContent>;
 
 export interface FailureReviewFormData {
   whatHappened: string;

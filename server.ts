@@ -3,6 +3,16 @@ import path from "path";
 import { createServer as createViteServer } from "vite";
 import { GoogleGenAI, Type } from "@google/genai";
 import dotenv from "dotenv";
+import { planContentSchema } from "./src/domain/schemas/planSchema";
+import {
+  PLANNING_MODEL,
+  PLANNING_PROMPT_VERSION,
+  PLANNING_RULES_VERSION,
+  planningRequestSchema,
+} from "./src/planning/contracts";
+import { generateRulesBasedPlanEnvelope } from "./src/planning/fallbackPlan";
+import { buildPlanningSafetyInstructions } from "./src/planning/safety";
+import { assertPlanningOutputSafe } from "./src/planning/outputSafety";
 
 dotenv.config();
 
@@ -15,69 +25,6 @@ const ai = new GoogleGenAI({
   }
 });
 
-function generateFallbackCard(inputs: any) {
-  const {
-    projectName,
-    printGoal,
-    printerTech,
-    printerName,
-    material,
-    purpose,
-    priority,
-    concerns,
-    notes
-  } = inputs;
-
-  let techConsiderations = "Verify manufacturer guidelines for your selected technology.";
-  if (printerTech === "Bed Slinger FDM") {
-    techConsiderations = "Bed Slingers have a moving Y-axis. Consider part orientation to minimize wobble and ensure adequate bed adhesion.";
-  } else if (printerTech === "CoreXY / Enclosed FDM") {
-    techConsiderations = "Enclosed CoreXY systems manage heat well, but ensure the ambient temperature does not cause heat creep in the hotend.";
-  } else if (printerTech === "LCD Resin" || printerTech === "SLA Resin" || printerTech === "DLP Resin") {
-    techConsiderations = "Resin printing requires careful handling. Ensure your vat, build platform, and resin condition are optimal, and verify manufacturer post-processing workflows.";
-  }
-
-  const baseAssumptions = [
-    !printerName && "Printer model was not specified.",
-    "Exact material brand is unknown.",
-    "Slicer profile, environmental conditions, and end-use requirements are assumed to be standard unless specified.",
-    notes ? `Note provided: "${notes}". Further specifics may need verification.` : null
-  ].filter(Boolean) as string[];
-
-  const readinessChecklist = [
-    "Verify the build surface is clean and ready.",
-    "Check that your material/resin is in good condition.",
-    "Compare your slicer settings to the manufacturer recommendations."
-  ];
-
-  if (notes) {
-    readinessChecklist.push("Review your additional notes against official documentation before proceeding.");
-  }
-
-  return {
-    quickRead: `You are printing "${projectName || 'a project'}" in ${material || 'the selected material'} with a focus on ${priority || 'the main priority'}. The goal is to produce a ${purpose ? purpose.toLowerCase() : 'custom'} part for: ${printGoal || 'your stated purpose'}. Please proceed cautiously and follow standard preparations.`,
-    printerTechConsiderations: techConsiderations,
-    materialWatchOuts: `For ${material || 'this material'}, always consult the manufacturer's Technical Data Sheet for optimal handling and environmental requirements. Watch for moisture or deterioration.`,
-    riskFlags: [
-      `Priority is ${priority || 'noted'}, which may require tuning specific slicer parameters.`,
-      ...(concerns || []).map((c: string) => `Monitored concern: ${c}. Review slicing strategy for this area.`)
-    ],
-    readinessChecklist,
-    postPrintNotes: [
-      "Allow parts to cool or drain completely before removal.",
-      "Follow safe handling procedures during post-processing and cleanup.",
-      "Avoid rushing support removal to prevent part damage."
-    ],
-    whatToDocument: [
-      "Document the ambient temperature and humidity.",
-      "Note the exact material brand and color used.",
-      "Record any anomalies during the first layers."
-    ],
-    assumptionsAndGaps: baseAssumptions.length > 0 ? baseAssumptions : ["No major missing information detected."],
-    friendlyNote: "Planning is the best way to avoid failed prints. Take your time setting up, and happy printing!"
-  };
-}
-
 async function startServer() {
   const app = express();
   const PORT = 3000;
@@ -85,91 +32,111 @@ async function startServer() {
   app.use(express.json());
 
   app.post("/api/generate-plan", async (req, res) => {
+    const parsedRequest = planningRequestSchema.safeParse(req.body || {});
+    const generatedAt = new Date().toISOString();
+
+    if (!parsedRequest.success) {
+      res.status(400).json({
+        ok: false,
+        data: null,
+        origin: "RULES_BASED_FALLBACK",
+        promptVersion: PLANNING_PROMPT_VERSION,
+        rulesVersion: PLANNING_RULES_VERSION,
+        warnings: ["The planning request was incomplete or invalid. The saved record remains available for user-authored planning."],
+        generatedAt,
+        errorCode: "INVALID_REQUEST",
+      });
+      return;
+    }
+
+    const input = parsedRequest.data;
+
     try {
-      const body = req.body || {};
-      const {
-        projectName,
-        printGoal,
-        printerTech,
-        printerName,
-        material,
-        purpose,
-        priority,
-        concerns,
-        notes
-      } = body;
-
       const prompt = `
-You are a thoughtful, friendly AI assistant for a technically capable 3D printing hobbyist. They are using your help to plan a 3D print.
+You are PrintPal 3D's bounded planning assistant for a technically capable 3D printing hobbyist or prosumer.
 
-User Inputs:
-- Project / Print Name: ${projectName}
-- What are you trying to print?: ${printGoal}
-- Printer Technology: ${printerTech}
-- Printer Name / Model: ${printerName || "Not specified"}
-- Material or Resin: ${material}
-- Print Purpose: ${purpose}
-- Top Priority: ${priority}
-- Known Concerns: ${(concerns || []).join(", ") || "None selected"}
-- Additional Notes: ${notes || "None"}
+Saved Record Context:
+- Project / Print Name: ${input.projectName}
+- Print Intent: ${input.printGoal}
+- Printer Technology: ${input.printerTech}
+- Printer Name / Model: ${input.printerName || "Not specified"}
+- Material or Resin: ${input.material}
+- Print Purpose: ${input.purpose}
+- Planning Emphasis: ${input.priority || "Meet the saved success criteria"}
+- Known Concerns: ${input.concerns.join(", ") || "None recorded"}
+- Success Criteria: ${input.successCriteria.join("; ") || "Not recorded"}
+- User-Provided Source References: ${input.sourceReferenceSummaries.join("; ") || "None attached"}
+- Additional User Context: ${input.notes || "None"}
 
-Please generate a detailed Print Planning Card based on these inputs. Follow these strict guidelines:
-- Be clear, practical, and cautious.
-- Do NOT provide universal hard values for temperatures, speeds, exposure times, wash/cure times, layer heights, support-density, slicer settings, or hardware-specific values.
-- Do NOT provide advice on electrical wiring, firmware changes, printer modifications, or hazardous chemical procedures.
-- Do NOT provide resin wash/cure procedures as instructions.
-- Do NOT prescribe solvents, cleaning agents, curing workflows, exposure workflows, or disposal steps.
-- Do NOT prescribe PPE as a universal instruction; instead say to verify resin/material SDS and manufacturer handling guidance.
-- Frame resin, material, slicer, and post-processing content as "verify", "review", "document", or "check against official guidance".
-- Manufacturer documentation, slicer documentation, material profiles, Technical Data Sheets, Safety Data Sheets, and printer manuals override PrintPal output.
-- Do NOT claim parts are load-bearing, food-safe, watertight, chemically resistant, etc.
-- Remind the user to consult manufacturer data sheets and manual recommendations.
-- Keep the tone calm, professional but friendly, not a gaming/hacker site.
+Create a structured planning view. Separate assumptions from missing information. Include source-verification prompts only for authoritative source categories or source references explicitly supplied by the user. Do not claim to have opened or verified any document.
 
-Return a JSON object with exactly these fields:
-- "quickRead": A 2-3 sentence overview of the plan and major watch-outs.
-- "printerTechConsiderations": Considerations specific to the selected printer technology. (String)
-- "materialWatchOuts": Things to watch out for with the specified material/resin. (String)
-- "riskFlags": An array of strings identifying the largest risks for this print.
-- "readinessChecklist": An array of strings describing practical preparation checks.
-- "postPrintNotes": An array of strings with safe post-processing thoughts.
-- "whatToDocument": An array of strings describing what to record after printing.
-- "assumptionsAndGaps": An array of strings identifying information that is missing or assumed.
-- "friendlyNote": A short encouraging or grounding sign-off note.
+Safety And Source Rules:
+- ${buildPlanningSafetyInstructions()}
+
+Return JSON with exactly these fields:
+- objectiveSummary: string
+- readinessConsiderations: string[]
+- printerWatchOuts: string[]
+- materialWatchOuts: string[]
+- assumptions: string[]
+- missingInformation: string[]
+- sourceChecks: string[]
+- variablesToRecord: string[]
+- expectedOutcomeCriteria: string[]
 `;
 
       const response = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
+        model: PLANNING_MODEL,
         contents: prompt,
         config: {
           responseMimeType: "application/json",
           responseSchema: {
             type: Type.OBJECT,
             properties: {
-              quickRead: { type: Type.STRING },
-              printerTechConsiderations: { type: Type.STRING },
-              materialWatchOuts: { type: Type.STRING },
-              riskFlags: { type: Type.ARRAY, items: { type: Type.STRING } },
-              readinessChecklist: { type: Type.ARRAY, items: { type: Type.STRING } },
-              postPrintNotes: { type: Type.ARRAY, items: { type: Type.STRING } },
-              whatToDocument: { type: Type.ARRAY, items: { type: Type.STRING } },
-              assumptionsAndGaps: { type: Type.ARRAY, items: { type: Type.STRING } },
-              friendlyNote: { type: Type.STRING },
+              objectiveSummary: { type: Type.STRING },
+              readinessConsiderations: { type: Type.ARRAY, items: { type: Type.STRING } },
+              printerWatchOuts: { type: Type.ARRAY, items: { type: Type.STRING } },
+              materialWatchOuts: { type: Type.ARRAY, items: { type: Type.STRING } },
+              assumptions: { type: Type.ARRAY, items: { type: Type.STRING } },
+              missingInformation: { type: Type.ARRAY, items: { type: Type.STRING } },
+              sourceChecks: { type: Type.ARRAY, items: { type: Type.STRING } },
+              variablesToRecord: { type: Type.ARRAY, items: { type: Type.STRING } },
+              expectedOutcomeCriteria: { type: Type.ARRAY, items: { type: Type.STRING } },
             },
             required: [
-              "quickRead", "printerTechConsiderations", "materialWatchOuts", 
-              "riskFlags", "readinessChecklist", "postPrintNotes", 
-              "whatToDocument", "assumptionsAndGaps", "friendlyNote"
-            ]
-          }
-        }
+              "objectiveSummary",
+              "readinessConsiderations",
+              "printerWatchOuts",
+              "materialWatchOuts",
+              "assumptions",
+              "missingInformation",
+              "sourceChecks",
+              "variablesToRecord",
+              "expectedOutcomeCriteria",
+            ],
+          },
+        },
       });
 
-      const data = JSON.parse(response.text?.trim() || "{}");
-      res.json(data);
-    } catch (error: any) {
-      const fallbackCard = generateFallbackCard(req.body);
-      res.json(fallbackCard);
+      const data = assertPlanningOutputSafe(planContentSchema.parse(JSON.parse(response.text?.trim() || "{}")));
+      res.json({
+        ok: true,
+        data,
+        origin: "AI_ASSISTED",
+        model: PLANNING_MODEL,
+        promptVersion: PLANNING_PROMPT_VERSION,
+        rulesVersion: PLANNING_RULES_VERSION,
+        warnings: [],
+        generatedAt,
+      });
+    } catch {
+      res.json(
+        generateRulesBasedPlanEnvelope(input, {
+          generatedAt,
+          warning: "Gemini was unavailable or its output could not be validated. A labeled rules-based planning draft was generated.",
+          errorCode: "AI_UNAVAILABLE_OR_INVALID",
+        }),
+      );
     }
   });
 

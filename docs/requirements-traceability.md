@@ -79,3 +79,31 @@
 - Responsive layouts use stacked mobile cards and multi-column desktop grids.
 - The existing planner, Material Compass, and Failure Review remain accessible.
 - Planning-card persistence, outcomes, duplication, comparison, AI interpretation, export, and import remain deferred.
+
+## Slice Four — Planning Record Integration
+
+| Requirement Area | Slice Four Asset | Verification |
+|---|---|---|
+| Structured planning input | `buildPlanningRequestFromRecord` and `PlanningRecordScreen` | Project, Attempt, success-criteria, concern, source, and freeform mapping tests |
+| Persistent Plan object | Embedded `Attempt.plan` through `AttemptRepository.update` | IndexedDB save-and-retrieve test |
+| Missing information and assumptions | Plan content schema and generation contracts | Schema and fallback-content tests |
+| Source-verification prompts | Saved source summaries plus source-check fields | Request mapping and source-governance review |
+| Editable planning content | `PlanningRecordScreen` editable fields and debounced local save | Desktop and mobile browser acceptance |
+| AI-origin transparency | Common API envelope and visible origin labels | Envelope, origin-transition, and browser tests |
+| Silent fallback correction | Server and client rules-based envelope | Network, invalid-response, and no-key browser scenarios |
+| Prompt and rules governance | `PLANNING_PROMPT_VERSION` and `PLANNING_RULES_VERSION` | Stored Plan metadata assertions |
+| User-authored continuity | `createUserAuthoredPlan` | AI-unavailable unit and browser workflow |
+| Universal-setting boundary | Planning prompt, deterministic fallback, and output safety checks | Safety-instruction and unsafe-output tests |
+| Exact user-entered values | Stored only as user context | Request-mapping and language review |
+| Existing module continuity | Standalone Quick Planner, Material Compass, and Failure Review | Navigation and regression checks |
+
+## Slice Four Exit Gate
+
+- A Plan can be generated or authored from a selected saved Attempt.
+- The Plan is stored locally inside the Attempt record and survives reload.
+- AI-assisted, rules-based-fallback, user-authored, and AI-user-edited origins remain explicit.
+- Every Plan field remains editable before and after saving.
+- Invalid or unavailable AI output cannot prevent user-authored or rules-based Plan saving.
+- Prompt and rules versions remain attached to generated Plans.
+- AI output is validated for schema and prohibited safety patterns before it is accepted.
+- Outcome capture, duplication, comparison, next-test planning, export, and import remain deferred.
