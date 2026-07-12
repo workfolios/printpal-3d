@@ -28,7 +28,8 @@ Planning Record Integration only. Outcomes, duplication, comparison, next-test p
 - Local-persistence tests: 9 passed.
 - Record-workflow tests: 8 passed.
 - Planning-service and safety tests: 8 passed.
-- Total Vitest tests: 40 passed.
+- Latest-revision save-coordination tests: 2 passed.
+- Total Vitest tests: 42 passed.
 - Vite production frontend build: passed.
 - Bundled Express server build: passed.
 
@@ -53,6 +54,16 @@ The accepted browser scenario verified that a user can:
 9. Continue to search, archive, filter, restore, and reopen the Project.
 10. Complete the workflow without horizontal viewport overflow.
 
+## Save-Concurrency Control
+
+Automated review identified that an older in-flight autosave could otherwise resolve after a newer edit and incorrectly mark the newer draft as saved. The accepted correction adds revision-aware serialized saves:
+
+- An in-flight stale revision cannot clear the dirty state or display a false saved state.
+- A queued revision that becomes stale is skipped before persistence.
+- The newest revision persists after any older in-flight write.
+- Leaving the Planning Record force-saves the current valid draft.
+- Focused tests cover both in-flight and queued stale-save scenarios.
+
 ## Safety And Failure Controls
 
 - Invalid planning requests receive a structured error envelope.
@@ -64,11 +75,11 @@ The accepted browser scenario verified that a user can:
 
 ## Accepted Validation Reference
 
-- Successful pull-request workflow run: `29191705320`.
-- Validated branch head: `9835818a3c8f170ff90d745ac72ca835ef494aba`.
+- Successful pull-request workflow run: `29192185656`.
+- Validated branch head: `cdf032e8cb397a6b6f736d631e45bc7a1ab13493`.
 - Validation artifact: `printpal-validation-and-source`.
-- Artifact digest: `sha256:26b01407254a1fe0a52efca567a5b22cda6ee2e0f8af6d28df5c50cf50f63062`.
+- Artifact digest: `sha256:fb821e801daca92aecbb9855659a9b3425e5fb0f4a96a4a7b8c37579343b5c91`.
 
 ## Final Status
 
-All Slice Four static, unit, persistence, build, desktop-browser, mobile-browser, AI-failure, and safety-validation gates passed. The implementation is eligible for pull-request acceptance and checkpoint promotion.
+All Slice Four static, unit, persistence, save-concurrency, build, desktop-browser, mobile-browser, AI-failure, and safety-validation gates passed. The implementation is eligible for pull-request acceptance and checkpoint promotion.
