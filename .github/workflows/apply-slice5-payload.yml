@@ -1,0 +1,59 @@
+name: Apply Slice Five Source Payload
+
+on:
+  push:
+    branches:
+      - phase3d/slice-5-outcome-attempt-duplication
+    paths:
+      - .github/workflows/apply-slice5-payload.yml
+      - .slice5/payload.b64
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Slice Five branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase3d/slice-5-outcome-attempt-duplication
+          fetch-depth: 0
+
+      - name: Decode and verify governed payload
+        shell: bash
+        run: |
+          base64 --decode .slice5/payload.b64 > /tmp/slice5-payload.tar.gz
+          echo "f595f02f5f25abc0514e81efd37ac24c68c3fd1ec621094380c4c0da69727292  /tmp/slice5-payload.tar.gz" | sha256sum --check --strict
+
+      - name: Apply Slice Five source changes
+        shell: bash
+        run: |
+          tar -xzf /tmp/slice5-payload.tar.gz
+          git status --short
+
+      - name: Commit applied source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/services/outcomeService.ts \
+            src/services/attemptDuplicationService.ts \
+            src/screens/OutcomeCaptureScreen.tsx \
+            src/screens/DuplicateAttemptScreen.tsx \
+            src/screens/AttemptDetailScreen.tsx \
+            src/app/routes.ts \
+            src/app/AppShell.tsx \
+            e2e/record-library.spec.ts \
+            src/services/__tests__/outcomeAndDuplication.test.ts \
+            docs/requirements-traceability.md \
+            docs/slice-5-authorization.md \
+            docs/slice-5-known-limitations.md \
+            docs/slice-5-rollback.md \
+            docs/slice-5-scope-control.md \
+            docs/slice-5-validation-record.md
+          git commit -m "feat(records): add outcome capture and attempt duplication"
+          git push origin HEAD:phase3d/slice-5-outcome-attempt-duplication
