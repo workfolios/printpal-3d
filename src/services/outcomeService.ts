@@ -1,5 +1,9 @@
 import type { PrintPalDatabase } from "../data/db";
 import { db as applicationDb } from "../data/db";
+import {
+  canTransitionAttemptStatus,
+  type AttemptStatus,
+} from "../domain/lifecycle";
 import { attemptSchema } from "../domain/schemas/attemptSchema";
 import { outcomeSchema } from "../domain/schemas/outcomeSchema";
 import { projectSchema } from "../domain/schemas/projectSchema";
@@ -86,6 +90,49 @@ export function buildOutcome(
   });
 }
 
+export function resolveOutcomeAttemptStatus(
+  currentStatus: AttemptStatus,
+  outcomeStatus: OutcomeStatus,
+): AttemptStatus {
+  if (currentStatus === "ARCHIVED") {
+    throw new Error("Restore the Attempt before recording or editing its Outcome.");
+  }
+
+  const targetStatus: AttemptStatus =
+    outcomeStatus === "NOT_YET_EVALUATED" ? "PRINTED" : "OUTCOME_RECORDED";
+  let status = currentStatus;
+
+  const transition = (nextStatus: AttemptStatus) => {
+    if (!canTransitionAttemptStatus(status, nextStatus)) {
+      throw new Error(`Invalid Attempt lifecycle transition: ${status} -> ${nextStatus}`);
+    }
+    status = nextStatus;
+  };
+
+  if (status === "DRAFT") transition("PLANNED");
+  if (status === "PLANNED") transition("PRINTED");
+
+  if (targetStatus === "PRINTED") {
+    if (status !== "PRINTED") {
+      throw new Error(
+        `Cannot change an Attempt in ${status} status back to a not-yet-evaluated Outcome.`,
+      );
+    }
+    return status;
+  }
+
+  if (status === "PRINTED") transition("OUTCOME_RECORDED");
+  if (status === "COMPARED") transition("OUTCOME_RECORDED");
+
+  if (status !== "OUTCOME_RECORDED") {
+    throw new Error(
+      `Cannot record an evaluated Outcome while the Attempt is in ${status} status.`,
+    );
+  }
+
+  return status;
+}
+
 export async function saveOutcomeForAttempt(
   database: PrintPalDatabase,
   projectId: string,
@@ -104,13 +151,12 @@ export async function saveOutcomeForAttempt(
     if (currentAttempt.projectId !== project.projectId) {
       throw new Error("The selected Attempt does not belong to the selected Project.");
     }
-    if (currentAttempt.status === "ARCHIVED") {
-      throw new Error("Restore the Attempt before recording or editing its Outcome.");
-    }
 
     const outcome = buildOutcome(project, input, now);
-    const nextAttemptStatus =
-      outcome.status === "NOT_YET_EVALUATED" ? "PRINTED" : "OUTCOME_RECORDED";
+    const nextAttemptStatus = resolveOutcomeAttemptStatus(
+      currentAttempt.status,
+      outcome.status,
+    );
 
     const attempt = attemptSchema.parse({
       ...currentAttempt,
