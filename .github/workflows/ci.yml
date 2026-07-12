@@ -23,4 +23,17 @@ jobs:
       - name: Install dependencies
         run: npm install --no-audit --no-fund
       - name: Validate types, tests, and production build
-        run: npm run check
+        shell: bash
+        run: |
+          set +e
+          npm run check > validation.log 2>&1
+          status=$?
+          cat validation.log
+          exit $status
+      - name: Preserve validation log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: printpal-validation-log
+          path: validation.log
+          if-no-files-found: error
