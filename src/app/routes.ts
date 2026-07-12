@@ -3,6 +3,8 @@ export type AppRoute =
   | { name: "NEW_PROJECT" }
   | { name: "ATTEMPT_DETAIL"; projectId: string; attemptId: string }
   | { name: "PLANNING_RECORD"; projectId: string; attemptId: string }
+  | { name: "RECORD_OUTCOME"; projectId: string; attemptId: string }
+  | { name: "DUPLICATE_ATTEMPT"; projectId: string; sourceAttemptId: string }
   | { name: "LEGACY_PLANNER" }
   | { name: "MATERIAL_COMPASS" }
   | { name: "FAILURE_REVIEW" };

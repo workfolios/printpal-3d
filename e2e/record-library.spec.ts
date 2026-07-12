@@ -58,6 +58,45 @@ test("creates a persistent planning record, retrieves it, and manages the projec
   await page.getByRole("button", { name: "Open Record" }).click();
   await expect(page.getByText("User-refined objective for the PETG cable clip.")).toBeVisible();
 
+  await page.getByRole("button", { name: "Record Outcome" }).first().click();
+  await expect(page.getByText("Outcome Capture", { exact: true })).toBeVisible();
+  await page.getByLabel(/Outcome Status/).selectOption("PARTIALLY_SUCCESSFUL");
+  await page.getByLabel(/Observed Result/).fill("The clip fit the cable, with minor flex at the opening.");
+  await page.getByLabel("Criterion: Clip fits the target cable").selectOption("MET");
+  await page.getByLabel("Criterion: Clip survives normal handling").selectOption("PARTIALLY_MET");
+  await page.getByLabel(/Deviations Or Defects/).fill("Small edge lift");
+  await page.getByLabel(/Lessons Learned/).fill("Change orientation on the next attempt");
+  await expect(page.getByText("Failure Review Prompts")).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await page.getByRole("button", { name: "Save Outcome" }).click();
+
+  await expect(page.getByText("Outcome Saved", { exact: true })).toBeVisible();
+  await expect(page.getByText("Partially Successful", { exact: true }).first()).toBeVisible();
+  await expect(page.getByText("The clip fit the cable, with minor flex at the opening.")).toBeVisible();
+
+  await page.getByRole("button", { name: "Duplicate Attempt" }).click();
+  await expect(page.getByRole("heading", { name: "Create Attempt 2 From Attempt 1" })).toBeVisible();
+  await expect(page.getByText("Inherited", { exact: true }).first()).toBeVisible();
+  await page.getByLabel(/Planned Attempt Description/).fill("Test a rotated orientation while preserving other context.");
+  await page.getByLabel(/Planned Variables/).fill("Orientation");
+  await page.getByLabel("Planned Changes").fill("Rotate the part orientation");
+  await expect(page.getByText("Changed", { exact: true }).first()).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await page.getByRole("button", { name: "Create Attempt 2" }).click();
+
+  await expect(page.getByText("Attempt 2 · DRAFT", { exact: true })).toBeVisible();
+  await expect(page.getByText("Inherited From Attempt 1", { exact: true })).toBeVisible();
+  await expect(page.getByText("Rotate the part orientation")).toBeVisible();
+  await expect(page.getByText("No Outcome has been recorded for Attempt 2.")).toBeVisible();
+  await expect(page.getByText("The clip fit the cable, with minor flex at the opening.")).toHaveCount(0);
+
+  await page.getByRole("button", { name: "Open Attempt 1" }).click();
+  await expect(page.getByText("Attempt 1 · OUTCOME_RECORDED", { exact: true })).toBeVisible();
+  await expect(page.getByText("The clip fit the cable, with minor flex at the opening.")).toBeVisible();
+  await page.getByRole("button", { name: "Open Attempt 2" }).click();
+  await expect(page.getByText("Attempt 2 · DRAFT", { exact: true })).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
   await page.getByRole("button", { name: "Record Library" }).click();
   await expect(page.getByRole("heading", { name: "PETG Cable Clip" })).toBeVisible();
 
