@@ -22,3 +22,31 @@
 - Production build passes.
 - Existing V0.3.1 UI and server behavior remain unchanged.
 - No persistence, navigation, or visible feature changes are introduced.
+
+## Slice Two — Local Persistence Foundation
+
+| Requirement Area | Slice Two Asset | Verification |
+|---|---|---|
+| Browser-resident persistence | `src/data/db.ts` | Close-and-reopen persistence test |
+| IndexedDB abstraction | Dexie database and typed tables | Database initialization and table tests |
+| Project CRUD | `ProjectRepository` | Create, retrieve, update, status-transition tests |
+| Attempt CRUD | `AttemptRepository` | Create, retrieve, list, update, status-transition tests |
+| Related record stores | Comparison and Next-Test repositories | Repository round-trip tests |
+| Application settings | `SettingsRepository` | JSON-safe setting round-trip test |
+| Atomic project creation | `createProjectWithFirstAttempt` | Commit and rollback tests |
+| Cascade deletion | `deleteProjectCascade` | Related-record deletion test |
+| Clear local data | `clearAllLocalData` | Five-table clear test |
+| Runtime validation before writes | Repository Zod parsing | Invalid-record rejection test |
+| Storage disclosure | `src/data/storageMetadata.ts` | Static governance review |
+| Existing V0.3.1 UI | No imports from `src/data` | Build and TypeScript regression checks |
+
+## Slice Two Exit Gate
+
+- IndexedDB tables initialize through Dexie.
+- Records survive database close and reopen.
+- Multi-record writes roll back when a related write fails.
+- Project deletion removes related attempts, comparisons, and next-test plans.
+- Local data can be cleared without changing the database definition.
+- Invalid records are rejected before persistence.
+- Existing visible application and Gemini routes remain unchanged.
+- Record Library and other V0.4 UI changes remain deferred to Slice Three.
