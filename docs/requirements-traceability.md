@@ -50,3 +50,32 @@
 - Invalid records are rejected before persistence.
 - Existing visible application and Gemini routes remain unchanged.
 - Record Library and other V0.4 UI changes remain deferred to Slice Three.
+
+## Slice Three — Record Library And Project Creation
+
+| Requirement Area | Slice Three Asset | Verification |
+|---|---|---|
+| Record-centered shell | `src/app/AppShell.tsx` and typed route state | Navigation and build review |
+| Record Library default | `RecordLibraryScreen` | Default-route and empty-state review |
+| Responsive project cards | `ProjectRecordCard` | Mobile, tablet, and desktop class matrix |
+| Search and filters | `recordLibraryService.ts` | Search, status, technology, material, and sorting tests |
+| Project creation | `NewProjectScreen` | Two-stage required-field flow |
+| Project plus Attempt 1 | `projectCreationService.ts` | Schema and IndexedDB integration tests |
+| Archive and restore | `ProjectRepository.transitionStatus` | Reactive UI action and repository tests |
+| Record retrieval | `AttemptDetailScreen` and `useProjectRecord` | Reactive record read path |
+| Guided and Technical modes | Shared schema plus presentation setting | Mode-persistence and shared-field review |
+| Existing planner access | `LegacyPlannerScreen` | Existing API and fallback path preserved |
+| Existing supporting modules | Material Compass and Failure Review routes | Source modules preserved and accessible |
+| Deferred planning integration | Slice Four boundary notice | No Plan object write in Slice Three |
+
+## Slice Three Exit Gate
+
+- Record Library is the default application screen.
+- A user can create a Project and Attempt 1 in one transaction.
+- Saved records appear reactively without application refresh.
+- Search, status, printer-technology, and material-class filters work.
+- A user can open, archive, and restore a project.
+- Guided and Technical modes use the same stored record schema.
+- Responsive layouts use stacked mobile cards and multi-column desktop grids.
+- The existing planner, Material Compass, and Failure Review remain accessible.
+- Planning-card persistence, outcomes, duplication, comparison, AI interpretation, export, and import remain deferred.
