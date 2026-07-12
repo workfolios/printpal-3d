@@ -107,3 +107,36 @@
 - Prompt and rules versions remain attached to generated Plans.
 - AI output is validated for schema and prohibited safety patterns before it is accepted.
 - Outcome capture, duplication, comparison, next-test planning, export, and import remain deferred.
+
+## Slice Five — Outcome And Attempt Duplication
+
+| Requirement Area | Slice Five Asset | Verification |
+|---|---|---|
+| Outcome recording | `OutcomeCaptureScreen` and `outcomeService.ts` | Unit, persistence, desktop, and mobile workflow tests |
+| Outcome status coverage | Existing Outcome schema plus governed status options | Five-state outcome tests |
+| Success-criteria results | Project-bound criterion validation | Exact criterion-set and browser-entry tests |
+| Observations and learning | Outcome observations, defects, unexpected conditions, post-processing, lessons, and notes | Schema, service, and browser retrieval tests |
+| AI-independent outcome entry | User-authored Outcome service | No Gemini route or AI dependency |
+| Attempt lifecycle completion | Outcome save maps evaluated results to `OUTCOME_RECORDED` and pending evaluation to `PRINTED` | Lifecycle persistence assertions |
+| Attempt duplication | `attemptDuplicationService.ts` and `DuplicateAttemptScreen` | Build, transaction, and browser tests |
+| Parent relationship | `parentAttemptId` plus Attempt History | Relationship and navigation assertions |
+| Inherited context | Printer, material, process, and source-reference cloning | Repository equality tests and UI badges |
+| Changed-field visibility | Inherited and Changed field badges | Desktop and mobile acceptance |
+| Planned-change capture | `changesFromParentAttempt` requirement | Empty-change rejection and browser workflow |
+| Clean child Attempt | New ID, timestamps, attempt number, Draft lifecycle, no Plan, no Outcome | Duplication integrity tests |
+| Failure Review integration | Documentation prompts inside Outcome Capture | Failed and partial-outcome browser scenario |
+| Existing planning continuity | Saved Plan and standalone planner remain intact | Full regression check |
+
+## Slice Five Exit Gate
+
+- Attempt 1 can receive a complete user-authored Outcome without AI.
+- All five required Outcome states are supported.
+- Success-criteria results remain tied to the current Project criteria.
+- Evaluated Outcomes advance the Attempt to `OUTCOME_RECORDED`; pending evaluation remains `PRINTED`.
+- Attempt 2 receives a new identifier, number, timestamps, and parent relationship.
+- Applicable printer, material, process, and source context is inherited and editable.
+- Inherited and changed fields are visible before the child Attempt is created.
+- Planned changes are explicitly recorded.
+- The prior Plan, Outcome, comparison links, and completion date are not copied.
+- Relationship integrity and transaction rollback tests pass.
+- Deterministic comparison, AI interpretation, next-test planning, export, and import remain deferred.
