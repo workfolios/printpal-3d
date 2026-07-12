@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { PlanningForm } from "../components/PlanningForm";
 import { ResultCard } from "../components/ResultCard";
-import { generateClientFallbackCard } from "../fallback";
-import type { PrintPlanningCard, PrintPlanningFormData } from "../types";
+import { requestPlanningEnvelope } from "../services/planningService";
+import type { PrintPlanningCard, PrintPlanningEnvelope, PrintPlanningFormData } from "../types";
 
 const EMPTY_FORM: PrintPlanningFormData = {
   projectName: "",
@@ -69,6 +69,7 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
   const [formData, setFormData] = useState<PrintPlanningFormData>(EMPTY_FORM);
   const [isLoading, setIsLoading] = useState(false);
   const [result, setResult] = useState<PrintPlanningCard | null>(null);
+  const [envelope, setEnvelope] = useState<PrintPlanningEnvelope | null>(null);
 
   const handleSubmit = async (data: PrintPlanningFormData) => {
     setFormData(data);
@@ -76,15 +77,9 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
     setResult(null);
 
     try {
-      const response = await fetch("/api/generate-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) throw new Error("Server error");
-      setResult(await response.json());
-    } catch {
-      setResult(generateClientFallbackCard(data));
+      const nextEnvelope = await requestPlanningEnvelope(data);
+      setEnvelope(nextEnvelope);
+      setResult(nextEnvelope.data);
     } finally {
       setIsLoading(false);
       window.setTimeout(() => {
@@ -99,7 +94,7 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
         <div>
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4B7270]">Existing V0.3.1 Module</p>
           <h1 className="mt-1 text-xl font-bold text-[#333333]">Print Planner</h1>
-          <p className="mt-1 text-xs text-[#6F6F6F]">The planner remains fully accessible. Saved-plan integration begins in Slice Four.</p>
+          <p className="mt-1 text-xs text-[#6F6F6F]">Use this standalone planner for an unsaved planning draft. Open a saved Attempt to create or edit its persistent Plan record.</p>
         </div>
         <div className="flex flex-wrap gap-2">
           {STARTERS.map((starter) => (
@@ -130,7 +125,7 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
               <span className="mt-8 text-center text-[10px] font-bold uppercase tracking-widest text-[#8A8A8A]">Generating structured planning card…</span>
             </div>
           ) : result ? (
-            <div className="h-auto flex-1 lg:h-full lg:overflow-hidden"><ResultCard card={result} formData={formData} /></div>
+            <div className="h-auto flex-1 lg:h-full lg:overflow-hidden"><ResultCard card={result} formData={formData} envelope={envelope} /></div>
           ) : (
             <div className="grid flex-1 place-items-center p-8 text-center text-[10px] font-bold uppercase tracking-widest text-[#8A8A8A]">Adjust the formulation, then generate a planning card.</div>
           )}
