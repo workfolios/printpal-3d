@@ -100,7 +100,7 @@ export function resolveOutcomeAttemptStatus(
 
   const targetStatus: AttemptStatus =
     outcomeStatus === "NOT_YET_EVALUATED" ? "PRINTED" : "OUTCOME_RECORDED";
-  let status = currentStatus;
+  let status: AttemptStatus = currentStatus;
 
   const transition = (nextStatus: AttemptStatus) => {
     if (!canTransitionAttemptStatus(status, nextStatus)) {
