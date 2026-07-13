@@ -175,7 +175,7 @@ test("persists bounded interpretation and an accepted Next-Test Plan", async ({ 
   await page.route("**/api/generate-next-test", (route) => route.abort());
   await seedDecisionSupportRecord(page);
 
-  await page.getByText("Slice Seven Decision Support", { exact: true }).first().click();
+  await page.getByRole("button", { name: "Open Record" }).click();
   await expect(page.getByText(/Attempt 2/).first()).toBeVisible();
 
   const storedComparison = page.getByRole("button", {
