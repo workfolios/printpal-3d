@@ -21,6 +21,12 @@ The merged Slice Seven repository contains eight additional decision-support tes
 - Temporary payload files and the temporary application workflow were removed before substantive review.
 - Pull-request validation is being run against the resulting source tree, not against staging artifacts.
 
+## Validation Corrections
+
+- Replaced an unsupported Playwright `Page.getByDisplayValue` call with a Locator `toHaveValue` assertion.
+- Updated the seeded Slice Seven browser scenario to open the record through the explicit `Open Record` control before navigating to its stored Comparison.
+- Both corrections affect acceptance-test navigation only and do not alter application records or product behavior.
+
 ## Required Pull-Request Gates
 
 - Complete current-branch TypeScript validation.
