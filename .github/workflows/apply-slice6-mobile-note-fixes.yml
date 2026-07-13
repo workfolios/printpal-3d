@@ -1,0 +1,41 @@
+name: Apply Slice Six Mobile And Criterion Fixes
+
+on:
+  push:
+    branches:
+      - phase3d/slice-6-deterministic-comparison
+    paths:
+      - .github/workflows/apply-slice6-mobile-note-fixes.yml
+      - .slice6review3/payload.part-*
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Slice Six branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase3d/slice-6-deterministic-comparison
+          fetch-depth: 0
+      - name: Reassemble and verify governed review corrections
+        shell: bash
+        run: |
+          cat .slice6review3/payload.part-* | base64 --decode > /tmp/slice6-mobile-note-fixes.tar.gz
+          echo "85a132c27d41dc81d9d56ce90122d1b9d84db91c012d5940109138dc0922c039  /tmp/slice6-mobile-note-fixes.tar.gz" | sha256sum --check --strict
+      - name: Apply reviewed source changes
+        shell: bash
+        run: |
+          tar -xzf /tmp/slice6-mobile-note-fixes.tar.gz
+          git status --short
+      - name: Commit reviewed source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/services/comparisonService.ts src/services/__tests__/comparisonService.test.ts src/screens/ComparisonRecordScreen.tsx
+          git commit -m "fix(comparison): preserve criterion-note evidence and mobile wrapping"
+          git push origin HEAD:phase3d/slice-6-deterministic-comparison
