@@ -207,7 +207,7 @@ test("persists bounded interpretation and an accepted Next-Test Plan", async ({ 
   await expect(page.getByText(/Next-Test Plan accepted/)).toBeVisible();
 
   await page.reload();
-  await expect(page.getByDisplayValue("Orientation only")).toBeVisible();
+  await expect(primaryVariable).toHaveValue("Orientation only");
   await expect(page.getByText("ACCEPTED")).toBeVisible();
   await expect(page.getByText(/User-refined interpretation/)).toBeVisible();
 
