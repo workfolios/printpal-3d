@@ -24,6 +24,7 @@ import { NewProjectScreen } from "../screens/NewProjectScreen";
 import { OutcomeCaptureScreen } from "../screens/OutcomeCaptureScreen";
 import { PlanningRecordScreen } from "../screens/PlanningRecordScreen";
 import { RecordLibraryScreen } from "../screens/RecordLibraryScreen";
+import { SettingsDataScreen } from "../screens/SettingsDataScreen";
 import type { AppRoute } from "./routes";
 import { NEW_PROJECT_ROUTE, RECORD_LIBRARY_ROUTE } from "./routes";
 
@@ -58,7 +59,7 @@ export function AppShell() {
             <button type="button" onClick={() => navigate({ name: "LEGACY_PLANNER" })} className={navButtonClass(route.name === "LEGACY_PLANNER")}><Sparkles className="h-4 w-4" /> Planner</button>
             <button type="button" onClick={() => navigate({ name: "MATERIAL_COMPASS" })} className={navButtonClass(route.name === "MATERIAL_COMPASS")}><Beaker className="h-4 w-4" /> Materials</button>
             <button type="button" onClick={() => navigate({ name: "FAILURE_REVIEW" })} className={navButtonClass(route.name === "FAILURE_REVIEW")}><AlertTriangle className="h-4 w-4" /> Failure Review</button>
-            <button type="button" disabled title="Settings And Data is scheduled for Slice Eight" className="inline-flex cursor-not-allowed items-center gap-2 rounded px-3 py-2 text-[10px] font-bold uppercase tracking-widest text-[#B0AFA9]"><Settings className="h-4 w-4" /> Settings</button>
+            <button type="button" onClick={() => navigate({ name: "SETTINGS_DATA" })} className={navButtonClass(route.name === "SETTINGS_DATA")}><Settings className="h-4 w-4" /> Settings</button>
           </nav>
 
           <div className="hidden items-center gap-1 rounded border border-[#D6D4CC] bg-[#F8F7F2] p-1 md:flex">
@@ -79,6 +80,7 @@ export function AppShell() {
               <button type="button" onClick={() => navigate({ name: "LEGACY_PLANNER" })} className={navButtonClass(route.name === "LEGACY_PLANNER")}><Sparkles className="h-4 w-4" /> Planner</button>
               <button type="button" onClick={() => navigate({ name: "MATERIAL_COMPASS" })} className={navButtonClass(route.name === "MATERIAL_COMPASS")}><Beaker className="h-4 w-4" /> Materials</button>
               <button type="button" onClick={() => navigate({ name: "FAILURE_REVIEW" })} className={navButtonClass(route.name === "FAILURE_REVIEW")}><AlertTriangle className="h-4 w-4" /> Failure Review</button>
+              <button type="button" onClick={() => navigate({ name: "SETTINGS_DATA" })} className={navButtonClass(route.name === "SETTINGS_DATA")}><Settings className="h-4 w-4" /> Settings</button>
             </div>
             <div className="mt-4 flex items-center justify-between rounded border border-[#D6D4CC] bg-[#F8F7F2] p-2">
               <span className="text-[9px] font-bold uppercase tracking-widest text-[#8A8A8A]">Presentation Mode</span>
@@ -175,6 +177,11 @@ export function AppShell() {
             onOpenAttempt={(attemptId) => navigate({ name: "ATTEMPT_DETAIL", projectId: route.projectId, attemptId })}
           />
         )}
+        {route.name === "SETTINGS_DATA" && (
+          <SettingsDataScreen
+            onOpenImportedProject={(projectId, attemptId) => navigate({ name: "ATTEMPT_DETAIL", projectId, attemptId })}
+          />
+        )}
         {route.name === "LEGACY_PLANNER" && <LegacyPlannerScreen onBack={() => navigate(RECORD_LIBRARY_ROUTE)} />}
         {route.name === "MATERIAL_COMPASS" && <MaterialCompass onBack={() => navigate(RECORD_LIBRARY_ROUTE)} />}
         {route.name === "FAILURE_REVIEW" && <FailureReview onBack={() => navigate(RECORD_LIBRARY_ROUTE)} />}
@@ -182,7 +189,7 @@ export function AppShell() {
 
       <footer className="border-t border-[#E2E1DB] bg-white">
         <div className="mx-auto flex w-full max-w-[1500px] flex-col gap-2 px-4 py-4 text-[10px] leading-relaxed text-[#7A7974] md:flex-row md:items-center md:justify-between md:px-6">
-          <span className="inline-flex items-center gap-2"><FlaskConical className="h-4 w-4 text-[#4B7270]" /> Records are stored locally in this browser. Backup controls arrive in Slice Eight.</span>
+          <span className="inline-flex items-center gap-2"><FlaskConical className="h-4 w-4 text-[#4B7270]" /> Records are stored locally in this browser. Export and recovery controls are available in Settings.</span>
           <span className="inline-flex items-center gap-2"><BookOpen className="h-4 w-4 text-[#4B7270]" /> Manufacturer documentation, TDS, SDS, and slicer guidance remain authoritative.</span>
         </div>
       </footer>

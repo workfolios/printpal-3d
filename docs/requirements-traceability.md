@@ -177,3 +177,62 @@
 - Eligible Attempts transition or return to `COMPARED` without losing completion timestamps.
 - Desktop and mobile Chromium workflows pass without horizontal overflow, including long unbroken evidence values.
 - AI interpretation, causal diagnosis, Next-Test planning, export, and import remain deferred.
+
+## Slice Seven — AI Interpretation And Next-Test Planning
+
+| Requirement Area | Slice Seven Asset | Verification |
+|---|---|---|
+| Normalized AI input | Decision-support request contracts | Request-shape and no-record-mutation tests |
+| Interpretation separation | Comparison interpretation fields | Schema and responsive UI assertions |
+| Alternate explanations | Bounded interpretation contract | Conditional-language and safety tests |
+| Uncertainty disclosure | Interpretation uncertainty fields | Fallback and AI-envelope tests |
+| Source checks | Interpretation source-check list | Source-governance assertions |
+| Next-Test question | Next-Test content schema | Required-field tests |
+| One primary variable | Next-Test validation and UI | Generation and edit assertions |
+| Constants and observations | Next-Test Plan fields | Unit and browser acceptance |
+| Origin transparency | AI, fallback, user, and edited origins | Persistence and display tests |
+| One plan per Comparison | Comparison and Next-Test links | Transaction and stale-record tests |
+| Stale decision-support invalidation | Deterministic refresh controls | P1 regression tests |
+| Safety and no causation | Output safety filters and bounded prompts | Active-voice causal and unsafe-output tests |
+
+## Slice Seven Exit Gate
+
+- Deterministic facts remain the authoritative Comparison layer.
+- Interpretation and Next-Test content remain structurally separate from recorded facts.
+- AI failure produces labeled rules-based content.
+- Users can edit interpretation and draft, accept, or reject a Next-Test Plan.
+- One Plan remains linked to one Comparison.
+- Stale Comparison facts block decision-support persistence.
+- Refreshing deterministic facts removes stale interpretation and planning links.
+- Desktop and Pixel 7 workflows pass without horizontal overflow.
+- Export, import, backup, restore, deployment, authentication, and cloud synchronization remain deferred.
+
+## Slice Eight — Export, Import, And Data Controls
+
+| Requirement Area | Slice Eight Asset | Verification |
+|---|---|---|
+| Project Markdown export | `renderProjectMarkdown` | Content and advisory-boundary tests |
+| Project JSON export | `createProjectExportEnvelope` | Schema and relationship tests |
+| Full Backup export | `createFullBackupEnvelope` | Five-table and settings tests |
+| Import validation | `parseImportText` and cross-record validation | Malformed and broken-link rejection tests |
+| Import preview | `previewImport` and Settings And Data UI | Metadata and count assertions |
+| Project import | `importProjectAsNew` | New-ID and relationship-rebuild tests |
+| Full Backup restore | `restoreFullBackupReplaceAll` | Replace-all and count-verification tests |
+| Atomic rollback | IndexedDB restore transaction | Simulated write-failure test |
+| Destructive confirmation | Settings And Data confirmation fields | Browser acceptance |
+| Clear local data | Existing `clearAllLocalData` transaction | UI and persistence tests |
+| Storage disclosure | Settings And Data disclosures | Desktop and mobile review |
+| Responsive data controls | `SettingsDataScreen` | Desktop and Pixel 7 overflow checks |
+
+## Slice Eight Exit Gate
+
+- A user can export one Project as readable Markdown and structured JSON.
+- A user can export all local PrintPal data as a versioned Full Backup.
+- Invalid files and broken relationships are rejected before any write.
+- Project import regenerates identifiers and rebuilds all internal relationships.
+- Full Backup restore replaces all local tables atomically and verifies record counts.
+- A failed restore retains the prior local dataset.
+- Clear-all and replace-all actions require exact typed confirmation.
+- Storage, privacy, origin, and backup limitations remain visible.
+- Desktop and Pixel 7 Chromium workflows pass without horizontal overflow.
+- Cloud synchronization, authentication, hosted storage, external database, and deployment remain deferred.
