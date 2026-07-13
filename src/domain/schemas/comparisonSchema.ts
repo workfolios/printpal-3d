@@ -38,9 +38,18 @@ export const comparisonSchema = z
     modelInferences: stringListSchema,
     alternateExplanations: stringListSchema,
     uncertainties: stringListSchema,
+    interpretationSummary: z.string().trim().optional(),
+    interpretationUncertainties: stringListSchema,
+    interpretationSourceChecks: stringListSchema,
     userEdits: z.string().trim().optional(),
     origin: outputOriginSchema,
     promptVersion: z.string().trim().optional(),
+    interpretationOrigin: outputOriginSchema.optional(),
+    interpretationPromptVersion: z.string().trim().optional(),
+    interpretationRulesVersion: z.string().trim().optional(),
+    interpretationModel: z.string().trim().optional(),
+    interpretedAt: isoDateTimeSchema.optional(),
+    nextTestPlanId: idSchema.optional(),
     createdAt: isoDateTimeSchema,
   })
   .superRefine((comparison, ctx) => {
@@ -49,6 +58,28 @@ export const comparisonSchema = z
         code: z.ZodIssueCode.custom,
         path: ["attemptBId"],
         message: "A comparison requires two different attempts.",
+      });
+    }
+
+    const hasInterpretation =
+      Boolean(comparison.interpretationSummary) ||
+      comparison.modelInferences.length > 0 ||
+      comparison.alternateExplanations.length > 0 ||
+      comparison.interpretationUncertainties.length > 0 ||
+      comparison.interpretationSourceChecks.length > 0;
+
+    if (hasInterpretation && !comparison.interpretationOrigin) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["interpretationOrigin"],
+        message: "An interpreted comparison requires an interpretation origin.",
+      });
+    }
+    if (comparison.interpretationOrigin && !comparison.interpretedAt) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        path: ["interpretedAt"],
+        message: "An interpreted comparison requires an interpreted timestamp.",
       });
     }
   });
