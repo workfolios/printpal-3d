@@ -1,0 +1,57 @@
+name: Apply Slice Six Source Payload
+
+on:
+  push:
+    branches:
+      - phase3d/slice-6-deterministic-comparison
+    paths:
+      - .github/workflows/apply-slice6-payload.yml
+      - .slice6/payload.part-*
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Slice Six branch
+        uses: actions/checkout@v4
+        with:
+          ref: phase3d/slice-6-deterministic-comparison
+          fetch-depth: 0
+
+      - name: Reassemble and verify governed payload
+        shell: bash
+        run: |
+          cat .slice6/payload.part-* | base64 --decode > /tmp/slice6-payload.tar.gz
+          echo "ea7e05c25c32dcf096f3da6d5d3021ccf3b0a76fbe8a19b3a91f3f5a001b07ad  /tmp/slice6-payload.tar.gz" | sha256sum --check --strict
+
+      - name: Apply Slice Six source changes
+        shell: bash
+        run: |
+          tar -xzf /tmp/slice6-payload.tar.gz
+          git status --short
+
+      - name: Commit applied source
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            e2e/record-library.spec.ts \
+            src/app/AppShell.tsx \
+            src/app/routes.ts \
+            src/screens/AttemptDetailScreen.tsx \
+            src/screens/ComparisonRecordScreen.tsx \
+            src/screens/ComparisonSetupScreen.tsx \
+            src/services/comparisonService.ts \
+            src/services/__tests__/comparisonService.test.ts \
+            docs/requirements-traceability.md \
+            docs/slice-6-scope-control.md \
+            docs/slice-6-known-limitations.md \
+            docs/slice-6-rollback.md \
+            docs/slice-6-validation-record.md
+          git commit -m "feat(records): add deterministic attempt comparison"
+          git push origin HEAD:phase3d/slice-6-deterministic-comparison
