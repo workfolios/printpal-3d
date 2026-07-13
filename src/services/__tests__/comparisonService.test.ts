@@ -11,6 +11,7 @@ import {
 const projectId = "11111111-1111-4111-8111-111111111111";
 const attemptAId = "22222222-2222-4222-8222-222222222222";
 const attemptBId = "33333333-3333-4333-8333-333333333333";
+const attemptCId = "55555555-5555-4555-8555-555555555555";
 const comparisonId = "44444444-4444-4444-8444-444444444444";
 const createdAt = "2026-07-13T12:00:00.000Z";
 const comparedAt = "2026-07-13T14:00:00.000Z";
@@ -143,6 +144,44 @@ describe("deterministic comparison", () => {
     expect(repeated.created).toBe(false);
     expect(repeated.comparison.comparisonId).toBe(comparisonId);
     expect(await db.comparisons.count()).toBe(1);
+  });
+
+  it("does not reuse planned-change declarations from unrelated Attempt relationships", () => {
+    const siblingA = attempt(attemptBId, 2);
+    const siblingB: Attempt = {
+      ...attempt(attemptCId, 3),
+      parentAttemptId: attemptAId,
+      materialContext: {
+        ...attempt(attemptCId, 3).materialContext,
+        color: "White",
+      },
+      processContext: {
+        ...attempt(attemptCId, 3).processContext,
+        changesFromParentAttempt: ["Change material color"],
+      },
+    };
+    const siblingProject = { ...project(), attemptIds: [attemptAId, attemptBId, attemptCId] };
+
+    const comparison = buildDeterministicComparison(
+      siblingProject,
+      siblingA,
+      siblingB,
+      comparedAt,
+      comparisonId,
+    );
+
+    expect(comparison.intentionalChanges).toEqual([]);
+    expect(comparison.unknownChanges).toContain(
+      "Material Color changed without a matching declared planned-change reference.",
+    );
+    expect(comparison.uncertainties.join(" ")).toMatch(/not a direct parent-child pair/i);
+  });
+
+  it("rejects an Attempt that is not indexed by the selected Project", () => {
+    const orphan = attempt(attemptCId, 3);
+    expect(() => buildDeterministicComparison(project(), attempt(attemptAId, 1), orphan)).toThrow(
+      "is not indexed by the selected Project",
+    );
   });
 
   it("rejects unevaluated Attempts", () => {

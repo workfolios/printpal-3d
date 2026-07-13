@@ -91,20 +91,29 @@ function tokenize(value: string): Set<string> {
   );
 }
 
-function isExplainedChange(descriptor: FieldDescriptor, declaredChanges: string[]): boolean {
-  if (descriptor.fieldPath === "processContext.plannedAttemptDescription" || descriptor.fieldPath === "processContext.plannedVariables") return true;
+function isExplainedChange(
+  descriptor: FieldDescriptor,
+  declaredChanges: string[],
+  directParentChildRelationship: boolean,
+): boolean {
+  if (
+    directParentChildRelationship &&
+    (descriptor.fieldPath === "processContext.plannedAttemptDescription" ||
+      descriptor.fieldPath === "processContext.plannedVariables")
+  ) return true;
   const evidence = tokenize(declaredChanges.join(" "));
   const fieldTokens = tokenize([descriptor.label, descriptor.fieldPath, ...(descriptor.intentionalAliases ?? [])].join(" "));
   return Array.from(fieldTokens).some((token) => evidence.has(token));
 }
 
+function directParentChildRelationship(attemptA: Attempt, attemptB: Attempt): boolean {
+  return attemptB.parentAttemptId === attemptA.attemptId || attemptA.parentAttemptId === attemptB.attemptId;
+}
+
 function declaredChangesBetween(attemptA: Attempt, attemptB: Attempt): string[] {
   if (attemptB.parentAttemptId === attemptA.attemptId) return uniqueNonEmpty(attemptB.processContext.changesFromParentAttempt);
   if (attemptA.parentAttemptId === attemptB.attemptId) return uniqueNonEmpty(attemptA.processContext.changesFromParentAttempt);
-  return uniqueNonEmpty([
-    ...attemptA.processContext.changesFromParentAttempt,
-    ...attemptB.processContext.changesFromParentAttempt,
-  ]);
+  return [];
 }
 
 function compareStringLists(label: string, attemptA: string[], attemptB: string[]): string[] {
@@ -120,6 +129,7 @@ function compareStringLists(label: string, attemptA: string[], attemptB: string[
 
 function ensureComparableAttempt(attempt: Attempt, project: Project): void {
   if (attempt.projectId !== project.projectId) throw new Error("Both Attempts must belong to the selected Project.");
+  if (!project.attemptIds.includes(attempt.attemptId)) throw new Error(`Attempt ${attempt.attemptNumber} is not indexed by the selected Project.`);
   if (!attempt.outcome) throw new Error(`Attempt ${attempt.attemptNumber} needs a recorded Outcome before comparison.`);
   if (attempt.outcome.status === "NOT_YET_EVALUATED") throw new Error(`Attempt ${attempt.attemptNumber} must be evaluated before comparison.`);
   if (attempt.status !== "OUTCOME_RECORDED" && attempt.status !== "COMPARED") {
@@ -141,6 +151,7 @@ export function buildDeterministicComparison(
   const constants: FieldSnapshot[] = [];
   const changes: FieldChange[] = [];
   const missingInformation: string[] = [];
+  const directlyRelated = directParentChildRelationship(attemptA, attemptB);
   const declaredChanges = declaredChangesBetween(attemptA, attemptB);
   const unknownChanges: string[] = [];
 
@@ -159,7 +170,7 @@ export function buildDeterministicComparison(
     if (descriptor.importantWhenMissing && (valueA === undefined || valueB === undefined)) {
       missingInformation.push(`${descriptor.label} is not recorded for ${valueA === undefined ? "Attempt A" : "Attempt B"}.`);
     }
-    if (!isExplainedChange(descriptor, declaredChanges)) {
+    if (!isExplainedChange(descriptor, declaredChanges, directlyRelated)) {
       unknownChanges.push(`${descriptor.label} changed without a matching declared planned-change reference.`);
     }
   }
@@ -201,6 +212,11 @@ export function buildDeterministicComparison(
     "This deterministic comparison identifies recorded similarities and differences; it does not establish causation.",
     "Unrecorded conditions, measurement variation, and interactions among variables may affect the observed Outcomes.",
   ];
+  if (!directlyRelated) {
+    uncertainties.push(
+      "The selected Attempts are not a direct parent-child pair; planned-change declarations from other Attempt relationships were not treated as evidence between this pair.",
+    );
+  }
   if (missingInformation.length > 0) uncertainties.push("Missing or unknown record fields limit the completeness of this comparison.");
 
   return comparisonSchema.parse({
