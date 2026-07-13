@@ -90,11 +90,45 @@ test("creates a persistent planning record, retrieves it, and manages the projec
   await expect(page.getByText("No Outcome has been recorded for Attempt 2.")).toBeVisible();
   await expect(page.getByText("The clip fit the cable, with minor flex at the opening.")).toHaveCount(0);
 
+  await page.getByRole("button", { name: "Record Outcome" }).first().click();
+  await page.getByLabel(/Outcome Status/).selectOption("SUCCESSFUL");
+  await page.getByLabel(/Observed Result/).fill("The rotated clip fit without flex and remained stable during handling.");
+  await page.getByLabel("Criterion: Clip fits the target cable").selectOption("MET");
+  await page.getByLabel("Criterion: Clip survives normal handling").selectOption("MET");
+  await page.getByLabel(/Lessons Learned/).fill("Retain the rotated orientation as a documented candidate.");
+  await page.getByRole("button", { name: "Save Outcome" }).click();
+  await expect(page.getByText("Attempt 2 · OUTCOME_RECORDED", { exact: true })).toBeVisible();
+
+  await page.getByRole("button", { name: "Compare Attempts" }).click();
+  await expect(page.getByRole("heading", { name: "Compare Attempt 2" })).toBeVisible();
+  await expect(page.getByText(/does not determine which change caused an Outcome/)).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+  await page.getByRole("button", { name: "Create Deterministic Comparison" }).click();
+
+  await expect(page.getByRole("heading", { name: "Deterministic Comparison" })).toBeVisible();
+  await expect(page.getByText("Recorded Constants", { exact: true })).toBeVisible();
+  await expect(page.getByText("Changed Fields", { exact: true })).toBeVisible();
+  await expect(page.getByText("Outcome Differences", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Outcome status changed from SUCCESSFUL to PARTIALLY_SUCCESSFUL|Outcome status changed from PARTIALLY_SUCCESSFUL to SUCCESSFUL/)).toBeVisible();
+  await expect(page.getByText(/does not establish causation/).first()).toBeVisible();
+  await expectNoHorizontalOverflow(page);
+
+  await page.getByRole("button", { name: "Attempt Detail" }).click();
+  await expect(page.getByText("Attempt 2 · COMPARED", { exact: true })).toBeVisible();
+  await expect(page.getByText("1 Comparison", { exact: true })).toBeVisible();
+  await page.reload();
+  await expect(page.getByRole("heading", { name: "Record Library" })).toBeVisible();
+  await page.getByPlaceholder("Search title, purpose, or tag").fill("PETG Cable Clip");
+  await page.getByRole("button", { name: "Open Record" }).click();
+  await page.getByRole("button", { name: /Open comparison Attempt 2 and Attempt 1|Open comparison Attempt 1 and Attempt 2/ }).click();
+  await expect(page.getByRole("heading", { name: "Deterministic Comparison" })).toBeVisible();
+  await page.getByRole("button", { name: "Attempt Detail" }).click();
+
   await page.getByRole("button", { name: "Open Attempt 1" }).click();
-  await expect(page.getByText("Attempt 1 · OUTCOME_RECORDED", { exact: true })).toBeVisible();
+  await expect(page.getByText("Attempt 1 · COMPARED", { exact: true })).toBeVisible();
   await expect(page.getByText("The clip fit the cable, with minor flex at the opening.")).toBeVisible();
   await page.getByRole("button", { name: "Open Attempt 2" }).click();
-  await expect(page.getByText("Attempt 2 · DRAFT", { exact: true })).toBeVisible();
+  await expect(page.getByText("Attempt 2 · COMPARED", { exact: true })).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
   await page.getByRole("button", { name: "Record Library" }).click();

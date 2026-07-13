@@ -6,12 +6,14 @@ import {
   ClipboardCheck,
   CopyPlus,
   GitBranch,
+  GitCompareArrows,
   Printer,
   RotateCcw,
   Sparkles,
 } from "lucide-react";
+import { useLiveQuery } from "dexie-react-hooks";
 import type { PresentationMode } from "../app/presentationMode";
-import { projectRepository } from "../data/repositories/instances";
+import { comparisonRepository, projectRepository } from "../data/repositories/instances";
 import type { Outcome, Plan } from "../domain/types";
 import { useProjectRecord } from "../hooks/useProjectRecord";
 
@@ -24,6 +26,8 @@ interface AttemptDetailScreenProps {
   onOpenPlanner: () => void;
   onRecordOutcome: () => void;
   onDuplicateAttempt: () => void;
+  onCompareAttempts: () => void;
+  onOpenComparison: (comparisonId: string) => void;
   onOpenAttempt: (attemptId: string) => void;
 }
 
@@ -79,9 +83,13 @@ export function AttemptDetailScreen({
   onOpenPlanner,
   onRecordOutcome,
   onDuplicateAttempt,
+  onCompareAttempts,
+  onOpenComparison,
   onOpenAttempt,
 }: AttemptDetailScreenProps) {
   const record = useProjectRecord(projectId, attemptId);
+  const comparisons = useLiveQuery(() => comparisonRepository.listByProject(projectId), [projectId], []);
+  const attemptComparisons = comparisons.filter((comparison) => comparison.attemptAId === attemptId || comparison.attemptBId === attemptId);
 
   if (!record) {
     return (
@@ -152,6 +160,11 @@ export function AttemptDetailScreen({
                 Outcome Saved
               </span>
             )}
+            {attemptComparisons.length > 0 && (
+              <span className="rounded-full border border-[#C9DAD7] bg-[#F1F7F6] px-2.5 py-1 text-[9px] font-bold uppercase tracking-widest text-[#4B7270]">
+                {attemptComparisons.length} Comparison{attemptComparisons.length === 1 ? "" : "s"}
+              </span>
+            )}
           </div>
           <h1 className="mt-3 text-2xl font-light tracking-tight text-[#333333] md:text-3xl">
             {project.title}
@@ -181,6 +194,14 @@ export function AttemptDetailScreen({
             className="inline-flex items-center justify-center gap-2 rounded border border-[#4B7270] px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4B7270] hover:bg-[#EDF3F2]"
           >
             <CopyPlus className="h-4 w-4" /> Duplicate Attempt
+          </button>
+          <button
+            type="button"
+            onClick={onCompareAttempts}
+            disabled={attempts.length < 2}
+            className="inline-flex items-center justify-center gap-2 rounded border border-[#4B7270] px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#4B7270] hover:bg-[#EDF3F2] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <GitCompareArrows className="h-4 w-4" /> Compare Attempts
           </button>
           <button
             type="button"
@@ -422,9 +443,27 @@ export function AttemptDetailScreen({
             {parentAttempt && <p className="mt-3 text-[10px] leading-relaxed text-[#7A7974]">Current parent relationship: Attempt {parentAttempt.attemptNumber}.</p>}
           </div>
 
+          <div className="rounded-lg border border-[#E2E1DB] bg-white p-5 shadow-sm">
+            <div className="flex items-center gap-2"><GitCompareArrows className="h-4 w-4 text-[#4B7270]" /><p className={LABEL_CLASS}>Comparison History</p></div>
+            {attemptComparisons.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {attemptComparisons.map((comparison) => {
+                  const attemptA = attempts.find((candidate) => candidate.attemptId === comparison.attemptAId);
+                  const attemptB = attempts.find((candidate) => candidate.attemptId === comparison.attemptBId);
+                  return (
+                    <button key={comparison.comparisonId} type="button" onClick={() => onOpenComparison(comparison.comparisonId)} className="flex w-full items-center justify-between rounded border border-[#EEEDE7] bg-[#FCFBF7] px-3 py-2.5 text-left text-xs text-[#6F6F6F] transition hover:border-[#4B7270]" aria-label={`Open comparison Attempt ${attemptA?.attemptNumber ?? "A"} and Attempt ${attemptB?.attemptNumber ?? "B"}`}>
+                      <span className="font-semibold text-[#333333]">Attempt {attemptA?.attemptNumber ?? "A"} vs {attemptB?.attemptNumber ?? "B"}</span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest">Open</span>
+                    </button>
+                  );
+                })}
+              </div>
+            ) : <p className="mt-3 text-xs leading-relaxed text-[#7A7974]">No stored Comparison records yet.</p>}
+          </div>
+
           <div className="rounded border border-[#DDE9E7] bg-[#F5FAF9] p-4 text-xs leading-relaxed text-[#4B7270]">
-            <strong className="mb-1 block uppercase">Slice Five Plan-To-Outcome Loop</strong>
-            Outcome Capture and relationship-preserving Attempt duplication are now available. Deterministic comparison remains reserved for Slice Six.
+            <strong className="mb-1 block uppercase">Slice Six Deterministic Comparison</strong>
+            Recorded constants, changes, missing information, and Outcome differences can now be compared without AI interpretation.
           </div>
 
           {attempt.sourceReferences.length > 0 && (
