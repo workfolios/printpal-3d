@@ -109,7 +109,7 @@ test("creates a persistent planning record, retrieves it, and manages the projec
   await expect(page.getByText("Recorded Constants", { exact: true })).toBeVisible();
   await expect(page.getByText("Changed Fields", { exact: true })).toBeVisible();
   await expect(page.getByText("Outcome Differences", { exact: true })).toBeVisible();
-  await expect(page.getByText(/Outcome status changed from SUCCESSFUL to PARTIALLY_SUCCESSFUL|Outcome status changed from PARTIALLY_SUCCESSFUL to SUCCESSFUL/)).toBeVisible();
+  await expect(page.getByText(/Outcome status changed from SUCCESSFUL to PARTIALLY_SUCCESSFUL|Outcome status changed from PARTIALLY_SUCCESSFUL to SUCCESSFUL/).first()).toBeVisible();
   await expect(page.getByText(/does not establish causation/).first()).toBeVisible();
   await expectNoHorizontalOverflow(page);
 
