@@ -15,6 +15,12 @@ Export, import, backup, restore, and local-data controls only. Cloud synchroniza
 
 The merged Slice Seven repository contains eight additional decision-support tests. Final pull-request validation must therefore confirm at least 82 total Vitest tests plus desktop and Pixel 7 browser acceptance.
 
+## Controlled Source Application
+
+- The exact Slice Eight source payload was reconstructed on the feature branch.
+- Temporary payload files and the temporary application workflow were removed before substantive review.
+- Pull-request validation is being run against the resulting source tree, not against staging artifacts.
+
 ## Required Pull-Request Gates
 
 - Complete current-branch TypeScript validation.
