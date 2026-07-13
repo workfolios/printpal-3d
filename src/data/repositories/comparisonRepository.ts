@@ -19,6 +19,15 @@ export class ComparisonRepository {
     return this.db.comparisons.where("projectId").equals(projectId).sortBy("createdAt");
   }
 
+  async update(comparisonId: string, comparison: Comparison): Promise<Comparison> {
+    if (comparison.comparisonId !== comparisonId) {
+      throw new Error("Comparison identifier cannot be changed during update.");
+    }
+    const validated = comparisonSchema.parse(comparison);
+    await this.db.comparisons.put(validated);
+    return validated;
+  }
+
   async delete(comparisonId: string): Promise<void> {
     await this.db.comparisons.delete(comparisonId);
   }

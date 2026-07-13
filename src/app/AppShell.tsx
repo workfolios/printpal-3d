@@ -18,6 +18,7 @@ import { AttemptDetailScreen } from "../screens/AttemptDetailScreen";
 import { ComparisonRecordScreen } from "../screens/ComparisonRecordScreen";
 import { ComparisonSetupScreen } from "../screens/ComparisonSetupScreen";
 import { DuplicateAttemptScreen } from "../screens/DuplicateAttemptScreen";
+import { DecisionSupportScreen } from "../screens/DecisionSupportScreen";
 import { LegacyPlannerScreen } from "../screens/LegacyPlannerScreen";
 import { NewProjectScreen } from "../screens/NewProjectScreen";
 import { OutcomeCaptureScreen } from "../screens/OutcomeCaptureScreen";
@@ -52,7 +53,7 @@ export function AppShell() {
           </button>
 
           <nav className="hidden items-center gap-1 lg:flex" aria-label="Primary navigation">
-            <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className={navButtonClass(route.name === "RECORD_LIBRARY" || route.name === "ATTEMPT_DETAIL" || route.name === "PLANNING_RECORD" || route.name === "RECORD_OUTCOME" || route.name === "DUPLICATE_ATTEMPT" || route.name === "COMPARE_ATTEMPTS" || route.name === "COMPARISON_RECORD")}><Database className="h-4 w-4" /> Records</button>
+            <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className={navButtonClass(route.name === "RECORD_LIBRARY" || route.name === "ATTEMPT_DETAIL" || route.name === "PLANNING_RECORD" || route.name === "RECORD_OUTCOME" || route.name === "DUPLICATE_ATTEMPT" || route.name === "COMPARE_ATTEMPTS" || route.name === "COMPARISON_RECORD" || route.name === "DECISION_SUPPORT")}><Database className="h-4 w-4" /> Records</button>
             <button type="button" onClick={() => navigate(NEW_PROJECT_ROUTE)} className={navButtonClass(route.name === "NEW_PROJECT")}><FilePlus2 className="h-4 w-4" /> New Print</button>
             <button type="button" onClick={() => navigate({ name: "LEGACY_PLANNER" })} className={navButtonClass(route.name === "LEGACY_PLANNER")}><Sparkles className="h-4 w-4" /> Planner</button>
             <button type="button" onClick={() => navigate({ name: "MATERIAL_COMPASS" })} className={navButtonClass(route.name === "MATERIAL_COMPASS")}><Beaker className="h-4 w-4" /> Materials</button>
@@ -73,7 +74,7 @@ export function AppShell() {
         {mobileMenuOpen && (
           <div className="border-t border-[#E2E1DB] bg-white px-4 py-4 lg:hidden">
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-              <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className={navButtonClass(route.name === "RECORD_LIBRARY" || route.name === "ATTEMPT_DETAIL" || route.name === "PLANNING_RECORD" || route.name === "RECORD_OUTCOME" || route.name === "DUPLICATE_ATTEMPT" || route.name === "COMPARE_ATTEMPTS" || route.name === "COMPARISON_RECORD")}><Database className="h-4 w-4" /> Records</button>
+              <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className={navButtonClass(route.name === "RECORD_LIBRARY" || route.name === "ATTEMPT_DETAIL" || route.name === "PLANNING_RECORD" || route.name === "RECORD_OUTCOME" || route.name === "DUPLICATE_ATTEMPT" || route.name === "COMPARE_ATTEMPTS" || route.name === "COMPARISON_RECORD" || route.name === "DECISION_SUPPORT")}><Database className="h-4 w-4" /> Records</button>
               <button type="button" onClick={() => navigate(NEW_PROJECT_ROUTE)} className={navButtonClass(route.name === "NEW_PROJECT")}><FilePlus2 className="h-4 w-4" /> New Print</button>
               <button type="button" onClick={() => navigate({ name: "LEGACY_PLANNER" })} className={navButtonClass(route.name === "LEGACY_PLANNER")}><Sparkles className="h-4 w-4" /> Planner</button>
               <button type="button" onClick={() => navigate({ name: "MATERIAL_COMPASS" })} className={navButtonClass(route.name === "MATERIAL_COMPASS")}><Beaker className="h-4 w-4" /> Materials</button>
@@ -161,6 +162,16 @@ export function AppShell() {
             comparisonId={route.comparisonId}
             mode={mode}
             onBack={() => navigate({ name: "ATTEMPT_DETAIL", projectId: route.projectId, attemptId: route.returnAttemptId })}
+            onOpenAttempt={(attemptId) => navigate({ name: "ATTEMPT_DETAIL", projectId: route.projectId, attemptId })}
+            onOpenDecisionSupport={() => navigate({ name: "DECISION_SUPPORT", projectId: route.projectId, comparisonId: route.comparisonId, returnAttemptId: route.returnAttemptId })}
+          />
+        )}
+        {route.name === "DECISION_SUPPORT" && (
+          <DecisionSupportScreen
+            projectId={route.projectId}
+            comparisonId={route.comparisonId}
+            mode={mode}
+            onBack={() => navigate({ name: "COMPARISON_RECORD", projectId: route.projectId, comparisonId: route.comparisonId, returnAttemptId: route.returnAttemptId })}
             onOpenAttempt={(attemptId) => navigate({ name: "ATTEMPT_DETAIL", projectId: route.projectId, attemptId })}
           />
         )}

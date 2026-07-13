@@ -1,4 +1,4 @@
-import { ArrowLeft, GitCompareArrows, ShieldCheck } from "lucide-react";
+import { ArrowLeft, BrainCircuit, GitCompareArrows, ShieldCheck } from "lucide-react";
 import { useLiveQuery } from "dexie-react-hooks";
 import type { PresentationMode } from "../app/presentationMode";
 import {
@@ -14,6 +14,7 @@ interface ComparisonRecordScreenProps {
   mode: PresentationMode;
   onBack: () => void;
   onOpenAttempt: (attemptId: string) => void;
+  onOpenDecisionSupport: () => void;
 }
 
 const LABEL_CLASS =
@@ -137,6 +138,7 @@ export function ComparisonRecordScreen({
   mode,
   onBack,
   onOpenAttempt,
+  onOpenDecisionSupport,
 }: ComparisonRecordScreenProps) {
   const record = useLiveQuery(async () => {
     const comparison = await comparisonRepository.get(comparisonId);
@@ -225,6 +227,25 @@ export function ComparisonRecordScreen({
           </p>
         </div>
       </div>
+
+      <section className="rounded-lg border border-[#B8CFCC] bg-[#F5FAF9] p-5 shadow-sm md:p-6">
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div className="flex items-start gap-3">
+            <BrainCircuit className="mt-0.5 h-5 w-5 shrink-0 text-[#4B7270]" />
+            <div>
+              <p className="text-[9px] font-bold uppercase tracking-widest text-[#4B7270]">Optional Interpretive Layer</p>
+              <h2 className="mt-1 text-lg font-semibold text-[#333333]">AI Interpretation And Next-Test Planning</h2>
+              <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#6F6F6F]">Use the deterministic facts as the fixed evidence layer. AI or rules-based support can frame hypotheses, alternate explanations, uncertainty, and one controlled next test without changing the stored Attempt facts.</p>
+              {comparison.interpretationOrigin && (
+                <p className="mt-3 text-xs font-semibold text-[#4B7270]">Saved interpretation: {comparison.interpretationOrigin.replaceAll("_", " ")}{comparison.nextTestPlanId ? " · Next-Test Plan linked" : ""}</p>
+              )}
+            </div>
+          </div>
+          <button type="button" onClick={onOpenDecisionSupport} className="inline-flex shrink-0 items-center justify-center gap-2 rounded bg-[#4B7270] px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-white">
+            <BrainCircuit className="h-4 w-4" /> Interpret And Plan
+          </button>
+        </div>
+      </section>
 
       <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
         {[attemptA, attemptB].map((attempt, index) => (

@@ -1,0 +1,116 @@
+  const fieldTokens = tokenize(
+    [
+      descriptor.label,
+      descriptor.fieldPath,
+      ...(descriptor.intentionalAliases ?? []),
+    ].join(" "),
+  );
+  return Array.from(fieldTokens).some((token) => evidence.has(token));
+}
+
+function directParentChildRelationship(
+  attemptA: Attempt,
+  attemptB: Attempt,
+): boolean {
+  return (
+    attemptB.parentAttemptId === attemptA.attemptId ||
+    attemptA.parentAttemptId === attemptB.attemptId
+  );
+}
+
+function lineagePath(
+  start: Attempt,
+  attemptsById: Map<string, Attempt>,
+): LineagePath {
+  const attempts: Attempt[] = [];
+  const visited = new Set<string>();
+  let current: Attempt | undefined = start;
+
+  while (current) {
+    if (visited.has(current.attemptId)) {
+      throw new Error(
+        "Attempt lineage contains a cycle and cannot be compared safely.",
+      );
+    }
+    visited.add(current.attemptId);
+    attempts.push(current);
+    if (!current.parentAttemptId) return { attempts, complete: true };
+    current = attemptsById.get(current.parentAttemptId);
+    if (!current) return { attempts, complete: false };
+  }
+
+  return { attempts, complete: true };
+}
+
+function collectLineageEvidence(
+  attemptA: Attempt,
+  attemptB: Attempt,
+  projectAttempts: Attempt[],
+): LineageEvidence {
+  const attemptsById = new Map(
+    projectAttempts.map((attempt) => [attempt.attemptId, attempt]),
+  );
+  attemptsById.set(attemptA.attemptId, attemptA);
+  attemptsById.set(attemptB.attemptId, attemptB);
+
+  const pathA = lineagePath(attemptA, attemptsById);
+  const pathB = lineagePath(attemptB, attemptsById);
+  const pathBIds = new Set(pathB.attempts.map((attempt) => attempt.attemptId));
+  const commonAncestor = pathA.attempts.find((attempt) =>
+    pathBIds.has(attempt.attemptId),
+  );
+  const directParentChild = directParentChildRelationship(attemptA, attemptB);
+
+  if (!commonAncestor || !pathA.complete || !pathB.complete) {
+    return {
+      directParentChild,
+      connected: false,
+      complete: pathA.complete && pathB.complete,
+      declaredChanges: [],
+    };
+  }
+
+  const branchA = pathA.attempts.slice(
+    0,
+    pathA.attempts.indexOf(commonAncestor),
+  );
+  const branchB = pathB.attempts.slice(
+    0,
+    pathB.attempts.indexOf(commonAncestor),
+  );
+  const rawChanges = [
+    ...branchA.flatMap((attempt) =>
+      attempt.processContext.changesFromParentAttempt.map((change) => ({
+        attempt,
+        change,
+      })),
+    ),
+    ...branchB.flatMap((attempt) =>
+      attempt.processContext.changesFromParentAttempt.map((change) => ({
+        attempt,
+        change,
+      })),
+    ),
+  ];
+
+  return {
+    directParentChild,
+    connected: true,
+    complete: true,
+    declaredChanges: uniqueNonEmpty(
+      rawChanges.map(({ attempt, change }) =>
+        directParentChild
+          ? change
+          : `Attempt ${attempt.attemptNumber} lineage: ${change}`,
+      ),
+    ),
+  };
+}
+function compareStringLists(
+  label: string,
+  attemptA: string[],
+  attemptB: string[],
+): string[] {
+  const a = new Set(uniqueNonEmpty(attemptA));
+  const b = new Set(uniqueNonEmpty(attemptB));
+  const added = Array.from(b).filter((value) => !a.has(value));

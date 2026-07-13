@@ -19,6 +19,12 @@ export class NextTestPlanRepository {
     return this.db.nextTestPlans.where("projectId").equals(projectId).sortBy("updatedAt");
   }
 
+  async findByComparison(originatingComparisonId: string): Promise<NextTestPlan | undefined> {
+    return this.db.nextTestPlans
+      .filter((plan) => plan.originatingComparisonId === originatingComparisonId)
+      .first();
+  }
+
   async update(
     nextTestPlanId: string,
     patch: Partial<
