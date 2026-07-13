@@ -145,30 +145,35 @@
 
 | Requirement Area | Slice Six Asset | Verification |
 |---|---|---|
-| Comparison selection | `ComparisonSetupScreen` | Same-Project and evaluated-Outcome eligibility tests |
+| Comparison selection | `ComparisonSetupScreen` | Same-Project, Project-index, different-Attempt, and evaluated-Outcome tests |
 | Deterministic field engine | `comparisonService.ts` governed field descriptors | Constants, changes, normalization, and no-AI tests |
-| Declared intentional changes | Parent relationship and `changesFromParentAttempt` | Relationship-aware unit assertions |
-| Unexplained changes | Deterministic token-reference check | Changed-field classification tests |
+| Planned-change lineage | Parent links and `changesFromParentAttempt` aggregation | Direct, ancestor-descendant, sibling, and incomplete-lineage tests |
+| Unexplained changes | Pair-specific deterministic evidence classification | Changed-field and uncertainty tests |
 | Missing information | Important-field and unknown-information checks | Unit and browser review |
-| Outcome comparison | Outcome status, success criteria, defects, conditions, post-processing, and lessons | Unit and browser assertions |
+| Source comparison | Full substantive Source Reference projection | URL, publisher, access-date, notes, and authority tests |
+| Outcome comparison | Outcome status, success criteria, criterion notes, defects, conditions, post-processing, and lessons | Unit and browser assertions |
 | Causation boundary | Empty inference arrays plus fixed uncertainty statements | Content assertions and browser acceptance |
-| Persistent Comparison | Existing `comparisons` IndexedDB store | Repository retrieval and reload test |
+| Persistent Comparison | Existing `comparisons` IndexedDB store | Repository retrieval, reload, and stale-refresh tests |
+| Unordered-pair identity | One stable Comparison ID per Attempt pair | Idempotency and refresh-in-place tests |
 | Transactional Attempt links | Comparison plus two `comparisonIds` updates | IndexedDB transaction test |
-| Governed lifecycle | `OUTCOME_RECORDED -> COMPARED` validation | Lifecycle and persistence assertions |
+| Governed lifecycle | `OUTCOME_RECORDED -> COMPARED` validation and restoration | Lifecycle and persistence assertions |
 | Existing workflow continuity | Plan, Outcome, duplication, archive, and restore regression | Full desktop and mobile scenario |
-| Responsive comparison view | `ComparisonRecordScreen` stacked and two-column layouts | Desktop and Pixel 7 overflow checks |
+| Responsive comparison view | `ComparisonRecordScreen` stacked and two-column layouts with long-token wrapping | Desktop and Pixel 7 overflow checks |
 
 ## Slice Six Exit Gate
 
-- Two different evaluated Attempts from one Project can be selected.
+- Two different indexed and evaluated Attempts from one Project can be selected.
 - The deterministic engine separates recorded constants from changes.
-- Declared planned changes remain distinguishable from unexplained recorded changes.
+- Planned-change declarations remain distinguishable from unexplained recorded changes across valid Attempt lineages.
+- Incomplete or unrelated lineage evidence is surfaced as uncertainty rather than inferred as pair-specific intent.
 - Missing and unknown information are surfaced.
-- Outcome states and Project success-criteria results are compared directly.
+- Full substantive Source Reference values are compared.
+- Outcome states, Project success-criteria results, and criterion-note changes are compared directly.
 - Supported observations remain factual and do not establish causation.
 - AI inference and Next-Test recommendation fields remain empty.
 - A validated Comparison record persists locally and survives reload.
+- Re-comparing a changed unordered pair refreshes the existing Comparison instead of creating a duplicate or returning stale facts.
 - Both Attempts receive the Comparison link transactionally.
-- Eligible Attempts transition to `COMPARED` without losing completion timestamps.
-- Desktop and mobile Chromium workflows pass without horizontal overflow.
+- Eligible Attempts transition or return to `COMPARED` without losing completion timestamps.
+- Desktop and mobile Chromium workflows pass without horizontal overflow, including long unbroken evidence values.
 - AI interpretation, causal diagnosis, Next-Test planning, export, and import remain deferred.
