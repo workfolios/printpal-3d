@@ -13,6 +13,22 @@ import {
 import { generateRulesBasedPlanEnvelope } from "./src/planning/fallbackPlan";
 import { buildPlanningSafetyInstructions } from "./src/planning/safety";
 import { assertPlanningOutputSafe } from "./src/planning/outputSafety";
+import {
+  COMPARISON_INTERPRETATION_PROMPT_VERSION,
+  COMPARISON_INTERPRETATION_RULES_VERSION,
+  DECISION_SUPPORT_MODEL,
+  NEXT_TEST_PROMPT_VERSION,
+  NEXT_TEST_RULES_VERSION,
+  comparisonInterpretationContentSchema,
+  deterministicComparisonPackageSchema,
+} from "./src/decisionSupport/contracts";
+import { nextTestPlanContentSchema } from "./src/domain/schemas/nextTestPlanSchema";
+import {
+  generateRulesBasedInterpretationEnvelope,
+  generateRulesBasedNextTestEnvelope,
+} from "./src/decisionSupport/fallback";
+import { buildDecisionSupportSafetyInstructions } from "./src/decisionSupport/safety";
+import { assertDecisionSupportOutputSafe } from "./src/decisionSupport/outputSafety";
 
 dotenv.config();
 
@@ -134,6 +150,197 @@ Return JSON with exactly these fields:
         generateRulesBasedPlanEnvelope(input, {
           generatedAt,
           warning: "Gemini was unavailable or its output could not be validated. A labeled rules-based planning draft was generated.",
+          errorCode: "AI_UNAVAILABLE_OR_INVALID",
+        }),
+      );
+    }
+  });
+
+  app.post("/api/interpret-comparison", async (req, res) => {
+    const parsedRequest = deterministicComparisonPackageSchema.safeParse(req.body || {});
+    const generatedAt = new Date().toISOString();
+
+    if (!parsedRequest.success) {
+      res.status(400).json({
+        ok: false,
+        data: null,
+        origin: "RULES_BASED_FALLBACK",
+        promptVersion: COMPARISON_INTERPRETATION_PROMPT_VERSION,
+        rulesVersion: COMPARISON_INTERPRETATION_RULES_VERSION,
+        warnings: ["The deterministic comparison package was incomplete or invalid."],
+        generatedAt,
+        errorCode: "INVALID_REQUEST",
+      });
+      return;
+    }
+
+    const facts = parsedRequest.data;
+    try {
+      const prompt = `
+You are PrintPal 3D's bounded comparison-interpretation assistant.
+
+Use only the deterministic comparison package below. Do not invent any additional printer, material, process, source, or Outcome facts.
+
+Deterministic Comparison Package:
+${JSON.stringify(facts, null, 2)}
+
+Interpret the recorded associations cautiously. The deterministic facts remain authoritative. Distinguish hypotheses from facts, provide plausible alternate explanations, preserve missing information and uncertainty, and identify source categories the user should verify. Never declare a cause.
+
+Safety And Evidence Rules:
+- ${buildDecisionSupportSafetyInstructions()}
+
+Return JSON with exactly these fields:
+- interpretationSummary: string
+- modelInferences: string[]
+- alternateExplanations: string[]
+- interpretationUncertainties: string[]
+- interpretationSourceChecks: string[]
+`;
+
+      const response = await ai.models.generateContent({
+        model: DECISION_SUPPORT_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              interpretationSummary: { type: Type.STRING },
+              modelInferences: { type: Type.ARRAY, items: { type: Type.STRING } },
+              alternateExplanations: { type: Type.ARRAY, items: { type: Type.STRING } },
+              interpretationUncertainties: { type: Type.ARRAY, items: { type: Type.STRING } },
+              interpretationSourceChecks: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: [
+              "interpretationSummary",
+              "modelInferences",
+              "alternateExplanations",
+              "interpretationUncertainties",
+              "interpretationSourceChecks",
+            ],
+          },
+        },
+      });
+
+      const data = assertDecisionSupportOutputSafe(
+        comparisonInterpretationContentSchema.parse(JSON.parse(response.text?.trim() || "{}")),
+      );
+      res.json({
+        ok: true,
+        data,
+        origin: "AI_ASSISTED",
+        model: DECISION_SUPPORT_MODEL,
+        promptVersion: COMPARISON_INTERPRETATION_PROMPT_VERSION,
+        rulesVersion: COMPARISON_INTERPRETATION_RULES_VERSION,
+        warnings: [],
+        generatedAt,
+      });
+    } catch {
+      res.json(
+        generateRulesBasedInterpretationEnvelope(facts, {
+          generatedAt,
+          warning: "Gemini was unavailable or its interpretation could not be validated. A labeled rules-based interpretation was generated.",
+          errorCode: "AI_UNAVAILABLE_OR_INVALID",
+        }),
+      );
+    }
+  });
+
+  app.post("/api/generate-next-test", async (req, res) => {
+    const parsedRequest = deterministicComparisonPackageSchema.safeParse(req.body || {});
+    const generatedAt = new Date().toISOString();
+
+    if (!parsedRequest.success) {
+      res.status(400).json({
+        ok: false,
+        data: null,
+        origin: "RULES_BASED_FALLBACK",
+        promptVersion: NEXT_TEST_PROMPT_VERSION,
+        rulesVersion: NEXT_TEST_RULES_VERSION,
+        warnings: ["The deterministic comparison package was incomplete or invalid."],
+        generatedAt,
+        errorCode: "INVALID_REQUEST",
+      });
+      return;
+    }
+
+    const facts = parsedRequest.data;
+    try {
+      const prompt = `
+You are PrintPal 3D's bounded next-test planning assistant.
+
+Use only the deterministic comparison package below. Do not invent any additional printer, material, process, source, or Outcome facts.
+
+Deterministic Comparison Package:
+${JSON.stringify(facts, null, 2)}
+
+Create one controlled next-test plan. Default to one primary variable. State what should remain constant, what the user should observe or measure, which authoritative source categories should be checked, what the test is expected to teach, and what remains uncertain. Do not prescribe exact operating values.
+
+Safety And Evidence Rules:
+- ${buildDecisionSupportSafetyInstructions()}
+
+Return JSON with exactly these fields:
+- testQuestion: string
+- primaryVariable: string
+- supportingVariable: string (may be empty)
+- constants: string[]
+- observationOrMeasurementPlan: string[]
+- sourceChecks: string[]
+- expectedLearning: string
+- uncertainty: string[]
+`;
+
+      const response = await ai.models.generateContent({
+        model: DECISION_SUPPORT_MODEL,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: Type.OBJECT,
+            properties: {
+              testQuestion: { type: Type.STRING },
+              primaryVariable: { type: Type.STRING },
+              supportingVariable: { type: Type.STRING },
+              constants: { type: Type.ARRAY, items: { type: Type.STRING } },
+              observationOrMeasurementPlan: { type: Type.ARRAY, items: { type: Type.STRING } },
+              sourceChecks: { type: Type.ARRAY, items: { type: Type.STRING } },
+              expectedLearning: { type: Type.STRING },
+              uncertainty: { type: Type.ARRAY, items: { type: Type.STRING } },
+            },
+            required: [
+              "testQuestion",
+              "primaryVariable",
+              "supportingVariable",
+              "constants",
+              "observationOrMeasurementPlan",
+              "sourceChecks",
+              "expectedLearning",
+              "uncertainty",
+            ],
+          },
+        },
+      });
+
+      const raw = JSON.parse(response.text?.trim() || "{}");
+      if (typeof raw.supportingVariable === "string" && !raw.supportingVariable.trim()) {
+        delete raw.supportingVariable;
+      }
+      const data = assertDecisionSupportOutputSafe(nextTestPlanContentSchema.parse(raw));
+      res.json({
+        ok: true,
+        data,
+        origin: "AI_ASSISTED",
+        model: DECISION_SUPPORT_MODEL,
+        promptVersion: NEXT_TEST_PROMPT_VERSION,
+        rulesVersion: NEXT_TEST_RULES_VERSION,
+        warnings: [],
+        generatedAt,
+      });
+    } catch {
+      res.json(
+        generateRulesBasedNextTestEnvelope(facts, {
+          generatedAt,
+          warning: "Gemini was unavailable or its next-test output could not be validated. A labeled rules-based plan was generated.",
           errorCode: "AI_UNAVAILABLE_OR_INVALID",
         }),
       );
