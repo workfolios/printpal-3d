@@ -1,17 +1,19 @@
 name: Apply Slice Eight Source
 
 on:
-  push:
+  pull_request:
     branches:
-      - phase3d/slice-8-export-import-data-controls
-    paths:
-      - .github/workflows/apply-slice8-source.yml
+      - main
+    types:
+      - opened
+      - synchronize
 
 permissions:
   contents: write
 
 jobs:
   apply:
+    if: github.head_ref == 'phase3d/slice-8-export-import-data-controls'
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout controlled feature branch
