@@ -153,6 +153,44 @@ describe("deterministic comparison", () => {
     );
   });
 
+  it("reports success-criterion note changes explicitly when statuses match", () => {
+    const attemptA = attempt(attemptAId, 1);
+    const attemptB = attempt(attemptBId, 2);
+    attemptA.outcome = {
+      ...attemptA.outcome!,
+      successCriteriaResults: [
+        { criterion: "Clip fits", status: "MET", notes: "Fit verified once" },
+        { criterion: "Clip survives handling", status: "MET" },
+      ],
+    };
+    attemptB.outcome = {
+      ...attemptB.outcome!,
+      successCriteriaResults: [
+        {
+          criterion: "Clip fits",
+          status: "MET",
+          notes: "Fit verified three times",
+        },
+        { criterion: "Clip survives handling", status: "MET" },
+      ],
+    };
+
+    const comparison = buildDeterministicComparison(
+      project(),
+      attemptA,
+      attemptB,
+      comparedAt,
+      comparisonId,
+    );
+
+    expect(comparison.outcomeDifferences).toContain(
+      "Criterion “Clip fits” note changed from “Fit verified once” to “Fit verified three times”.",
+    );
+    expect(comparison.outcomeDifferences).not.toContain(
+      "Criterion “Clip fits” changed from MET to MET.",
+    );
+  });
+
   it("stores the Comparison and links both Attempts transactionally", async () => {
     const result = await createDeterministicComparisonInProject(
       db,

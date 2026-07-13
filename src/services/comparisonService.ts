@@ -564,13 +564,19 @@ export function buildDeterministicComparison(
       missingInformation.push(
         `Success-criterion result is incomplete for: ${criterion}.`,
       );
-    } else if (
-      resultA.status !== resultB.status ||
-      (resultA.notes ?? "") !== (resultB.notes ?? "")
-    ) {
-      outcomeDifferences.push(
-        `Criterion “${criterion}” changed from ${resultA.status} to ${resultB.status}.`,
-      );
+    } else {
+      if (resultA.status !== resultB.status) {
+        outcomeDifferences.push(
+          `Criterion “${criterion}” changed from ${resultA.status} to ${resultB.status}.`,
+        );
+      }
+      const noteA = resultA.notes?.trim() || "not recorded";
+      const noteB = resultB.notes?.trim() || "not recorded";
+      if (noteA !== noteB) {
+        outcomeDifferences.push(
+          `Criterion “${criterion}” note changed from “${noteA}” to “${noteB}”.`,
+        );
+      }
     }
   }
   if ((outcomeA.summary ?? "") !== (outcomeB.summary ?? ""))
