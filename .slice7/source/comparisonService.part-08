@@ -1,0 +1,51 @@
+          (candidate) => candidate.comparisonId === comparisonId,
+        )
+      )
+        throw new Error("The generated Comparison identifier already exists.");
+
+      const comparison = buildDeterministicComparison(
+        project,
+        attemptA,
+        attemptB,
+        now,
+        comparisonId,
+        projectAttempts,
+      );
+      const updatedA = comparedAttempt(attemptA, comparison.comparisonId, now);
+      const updatedB = comparedAttempt(attemptB, comparison.comparisonId, now);
+
+      const updatedProject = projectSchema.parse({
+        ...project,
+        updatedAt: now,
+      });
+      await database.comparisons.add(comparison);
+      await database.attempts.put(updatedA);
+      await database.attempts.put(updatedB);
+      await database.projects.put(updatedProject);
+      return {
+        comparison,
+        attemptA: updatedA,
+        attemptB: updatedB,
+        created: true,
+      };
+    },
+  );
+}
+
+export async function createDeterministicComparison(
+  projectId: string,
+  attemptAId: string,
+  attemptBId: string,
+): Promise<{
+  comparison: Comparison;
+  attemptA: Attempt;
+  attemptB: Attempt;
+  created: boolean;
+}> {
+  return createDeterministicComparisonInProject(
+    applicationDb,
+    projectId,
+    attemptAId,
+    attemptBId,
+  );
+}
