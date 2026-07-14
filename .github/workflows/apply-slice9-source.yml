@@ -6,6 +6,10 @@ on:
       - phase3d/slice-9-integrated-ux-regression
     paths:
       - .github/workflows/apply-slice9-source.yml
+  pull_request:
+    branches:
+      - main
+    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
