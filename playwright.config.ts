@@ -10,6 +10,7 @@ export default defineConfig({
     baseURL: "http://127.0.0.1:3000",
     screenshot: "only-on-failure",
     trace: "retain-on-failure",
+    video: "retain-on-failure",
   },
   webServer: {
     command: "npm run dev",
@@ -21,6 +22,14 @@ export default defineConfig({
     {
       name: "desktop-chromium",
       use: { ...devices["Desktop Chrome"] },
+    },
+    {
+      name: "desktop-firefox",
+      use: { ...devices["Desktop Firefox"] },
+    },
+    {
+      name: "desktop-webkit",
+      use: { ...devices["Desktop Safari"] },
     },
     {
       name: "mobile-chromium",

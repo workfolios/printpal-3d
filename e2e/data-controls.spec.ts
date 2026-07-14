@@ -7,7 +7,7 @@ async function expectNoHorizontalOverflow(page: Page) {
 async function openSettings(page: Page) {
   const width = page.viewportSize()?.width ?? 1280;
   if (width < 1024) {
-    await page.getByRole("button", { name: "Toggle navigation menu" }).click();
+    await page.getByRole("button", { name: /navigation menu/ }).click();
   }
   await page.getByRole("button", { name: "Settings" }).click();
   await expect(page.getByRole("heading", { name: "Portability, recovery, and local control" })).toBeVisible();
@@ -65,7 +65,7 @@ test("exports, validates, restores, and reimports local PrintPal data", async ({
   await expect(page.getByText(/Full Backup replaced the prior local PrintPal data successfully/)).toBeVisible();
 
   const width = page.viewportSize()?.width ?? 1280;
-  if (width < 1024) await page.getByRole("button", { name: "Toggle navigation menu" }).click();
+  if (width < 1024) await page.getByRole("button", { name: /navigation menu/ }).click();
   await page.getByRole("button", { name: "Records" }).click();
   await expect(page.getByRole("heading", { name: "Backup Validation Clip" })).toBeVisible();
 

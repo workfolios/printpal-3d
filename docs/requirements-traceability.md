@@ -236,3 +236,34 @@
 - Storage, privacy, origin, and backup limitations remain visible.
 - Desktop and Pixel 7 Chromium workflows pass without horizontal overflow.
 - Cloud synchronization, authentication, hosted storage, external database, and deployment remain deferred.
+
+## Slice Nine — Integrated UX And Regression
+
+| Requirement Area | Slice Nine Asset | Verification |
+|---|---|---|
+| Integrated record navigation | `AppShell.tsx` and `ReferenceToolsScreen.tsx` | Keyboard, active-state, and browser workflow assertions |
+| Material context integration | `PlanningRecordScreen.tsx` | Saved-record browser scenario and content review |
+| Failure documentation integration | `OutcomeCaptureScreen.tsx` | Failed and partial Outcome browser scenarios |
+| Legacy utility disposition | Reference Tools route with preserved standalone utilities | V0.3.1 regression and accessibility checks |
+| Placeholder and source cleanup | UI copy, README, metadata, obsolete Slice Seven payload removal | Source scan and reconciliation record |
+| Keyboard accessibility | Skip link, route focus, mode state, menu semantics, Escape handling | Playwright keyboard assertions |
+| Accessibility structure | Playwright landmark, labeling, focus, duplicate-ID, alt-text, and keyboard checks | Cross-browser acceptance gate |
+| Responsive integrity | Shared overflow assertions and no trapped internal panels | Desktop and Pixel 7 acceptance |
+| Cross-browser compatibility | Chromium, Firefox, WebKit, and Pixel 7 Chromium projects | Full Playwright matrix |
+| Safety scenario matrix | `integratedSafetyRegression.test.ts` | Ten prohibited-output scenarios |
+| Complete record loop | `integrated-ux.spec.ts` | Plan-to-next-test, export, clear, restore, and relationship assertions |
+| Checkpoint evidence | CI logs, screenshots, Playwright report, and source snapshot | GitHub Actions artifact |
+
+## Slice Nine Exit Gate
+
+- The complete Project-to-backup-restoration acceptance scenario passes.
+- Planning, Outcome, Comparison, interpretation, and accepted Next-Test records survive restoration.
+- Core screens pass WCAG-oriented automated accessibility scans.
+- Keyboard navigation, route focus, active navigation, and reduced-motion controls operate as intended.
+- Desktop Chromium, Firefox, WebKit, and Pixel 7 Chromium workflows pass.
+- Core screens and reference tools pass horizontal-overflow checks.
+- The ten-scenario safety matrix passes.
+- Original V0.3.1 reference utilities remain accessible without controlling the persistent record architecture.
+- README, package version, metadata, requirements traceability, and source summary match the V0.4 checkpoint.
+- Validation logs, screenshots, and a governed source snapshot are preserved.
+- Deployment, authentication, cloud synchronization, external databases, and direct AI Studio modification remain deferred.

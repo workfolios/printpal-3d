@@ -92,7 +92,7 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
     <section className="flex min-h-0 w-full flex-1 flex-col gap-4">
       <div className="flex flex-col gap-3 rounded-lg border border-[#E2E1DB] bg-white p-4 shadow-sm md:flex-row md:items-center md:justify-between">
         <div>
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4B7270]">Existing V0.3.1 Module</p>
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-[#4B7270]">Standalone Reference Tool</p>
           <h1 className="mt-1 text-xl font-bold text-[#333333]">Print Planner</h1>
           <p className="mt-1 text-xs text-[#6F6F6F]">Use this standalone planner for an unsaved planning draft. Open a saved Attempt to create or edit its persistent Plan record.</p>
         </div>
@@ -100,7 +100,7 @@ export function LegacyPlannerScreen({ onBack }: LegacyPlannerScreenProps) {
           {STARTERS.map((starter) => (
             <button key={starter.label} type="button" onClick={() => setFormData(starter.data)} disabled={isLoading} className="rounded-full border border-[#E2E1DB] bg-white px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#6F6F6F] hover:border-[#4B7270]">{starter.label}</button>
           ))}
-          <button type="button" onClick={onBack} className="rounded border border-[#4B7270] px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#4B7270] hover:bg-[#EDF3F2]">Back To Records</button>
+          <button type="button" onClick={onBack} className="rounded border border-[#4B7270] px-3 py-1.5 text-[9px] font-bold uppercase tracking-wider text-[#4B7270] hover:bg-[#EDF3F2]">Back To Reference Tools</button>
         </div>
       </div>
 

@@ -1,6 +1,7 @@
 import {
   AlertCircle,
   ArrowLeft,
+  Beaker,
   BookOpen,
   Check,
   CloudOff,
@@ -349,6 +350,25 @@ export function PlanningRecordScreen({
             </dl>
           </div>
 
+          <div className="rounded-lg border border-[#D7E3E1] bg-[#F7FAF9] p-5 shadow-sm">
+            <div className="flex items-center gap-2">
+              <Beaker className="h-4 w-4 text-[#4B7270]" aria-hidden="true" />
+              <h2 className="text-xs font-bold uppercase tracking-widest text-[#333333]">Material Context Checklist</h2>
+            </div>
+            <p className="mt-3 text-xs leading-5 text-[#5D706E]">
+              Use the saved material context as a verification prompt, not as a universal settings recommendation.
+            </p>
+            <ul className="mt-4 space-y-2 text-xs leading-5 text-[#3D5D5B]">
+              <li>• Confirm the exact product or resin and review the applicable manufacturer guide, TDS, and SDS.</li>
+              <li>• Record storage, drying, age, batch, or environmental context when it could affect repeatability.</li>
+              <li>• Preserve the slicer profile or settings reference used for this Attempt without treating it as universally valid.</li>
+              <li>• Identify any end-use claim that requires separate technical validation.</li>
+            </ul>
+            <p className="mt-3 text-[10px] leading-5 text-[#5D706E]">
+              Current material: <strong>{attempt.materialContext.materialClass}</strong>. Attached sources: <strong>{sourceSummary}</strong>.
+            </p>
+          </div>
+
           <div className="rounded-lg border border-[#E2E1DB] bg-white p-5 shadow-sm">
             <h2 className="text-xs font-bold uppercase tracking-widest text-[#333333]">Planning Inputs</h2>
             <label className={`mt-4 block ${LABEL_CLASS}`}>
@@ -396,7 +416,7 @@ export function PlanningRecordScreen({
           </div>
         </aside>
 
-        <main className="min-w-0 rounded-lg border border-[#E2E1DB] bg-white shadow-sm">
+        <section aria-label="Editable planning record" className="min-w-0 rounded-lg border border-[#E2E1DB] bg-white shadow-sm">
           {!planDraft ? (
             <div className="grid min-h-[520px] place-items-center p-8 text-center">
               <div className="max-w-lg">
@@ -478,7 +498,7 @@ export function PlanningRecordScreen({
               </div>
             </div>
           )}
-        </main>
+        </section>
       </div>
     </section>
   );

@@ -6,10 +6,38 @@
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 }
 
-html, body, #root {
-  height: 100%;
+html,
+body,
+#root {
+  min-height: 100%;
   margin: 0;
-  display: flex;
-  flex-direction: column;
-  flex: 1;
+}
+
+body {
+  min-width: 320px;
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 3px solid #274e4c;
+  outline-offset: 3px;
+}
+
+:where(button, input, select, textarea):disabled {
+  cursor: not-allowed;
+}
+
+::selection {
+  background: #d7e3e1;
+  color: #263c3b;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }

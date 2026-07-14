@@ -23,7 +23,7 @@ interface AttemptDetailScreenProps {
   mode: PresentationMode;
   onBack: () => void;
   onOpenPlan: () => void;
-  onOpenPlanner: () => void;
+  onOpenReferenceTools: () => void;
   onRecordOutcome: () => void;
   onDuplicateAttempt: () => void;
   onCompareAttempts: () => void;
@@ -80,7 +80,7 @@ export function AttemptDetailScreen({
   mode,
   onBack,
   onOpenPlan,
-  onOpenPlanner,
+  onOpenReferenceTools,
   onRecordOutcome,
   onDuplicateAttempt,
   onCompareAttempts,
@@ -205,10 +205,10 @@ export function AttemptDetailScreen({
           </button>
           <button
             type="button"
-            onClick={onOpenPlanner}
+            onClick={onOpenReferenceTools}
             className="inline-flex items-center justify-center gap-2 rounded border border-[#D6D4CC] px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-[#6F6F6F] hover:bg-[#F8F7F2]"
           >
-            <BookOpen className="h-4 w-4" /> Quick Planner
+            <BookOpen className="h-4 w-4" /> Reference Tools
           </button>
           <button
             type="button"
@@ -462,7 +462,7 @@ export function AttemptDetailScreen({
           </div>
 
           <div className="rounded border border-[#DDE9E7] bg-[#F5FAF9] p-4 text-xs leading-relaxed text-[#4B7270]">
-            <strong className="mb-1 block uppercase">Slice Six Deterministic Comparison</strong>
+            <strong className="mb-1 block uppercase">Deterministic Comparison</strong>
             Recorded constants, changes, missing information, and Outcome differences can now be compared without AI interpretation.
           </div>
 

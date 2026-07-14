@@ -9,6 +9,7 @@ export type AppRoute =
   | { name: "COMPARISON_RECORD"; projectId: string; comparisonId: string; returnAttemptId: string }
   | { name: "DECISION_SUPPORT"; projectId: string; comparisonId: string; returnAttemptId: string }
   | { name: "SETTINGS_DATA" }
+  | { name: "REFERENCE_TOOLS" }
   | { name: "LEGACY_PLANNER" }
   | { name: "MATERIAL_COMPASS" }
   | { name: "FAILURE_REVIEW" };
