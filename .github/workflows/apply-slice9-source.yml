@@ -33,7 +33,7 @@ jobs:
           from pathlib import Path
 
           staging = Path('.slice9')
-          for part_number in ('009', '010', '011', '012'):
+          for part_number in ('008', '009', '010', '011', '012'):
               chunks = sorted(staging.glob(f'payload.part-{part_number}.hex-*'))
               if not chunks:
                   raise SystemExit(f'Missing hexadecimal chunks for part {part_number}.')
