@@ -6,10 +6,6 @@ on:
       - phase3d/slice-9-integrated-ux-regression
     paths:
       - .github/workflows/apply-slice9-source.yml
-  pull_request:
-    branches:
-      - main
-    types: [opened, synchronize, reopened]
 
 permissions:
   contents: write
@@ -30,9 +26,15 @@ jobs:
           node-version: 22
 
       - name: Reconstruct exact Slice Nine source
+        id: source
         shell: bash
         run: |
           set -euo pipefail
+          if [ ! -d .slice9 ]; then
+            echo "apply=false" >> "$GITHUB_OUTPUT"
+            echo "No Slice Nine staging payload remains; nothing to apply."
+            exit 0
+          fi
           python - <<'PY'
           from pathlib import Path
 
@@ -51,14 +53,17 @@ jobs:
           done < .slice9-delete-manifest.txt
           rm -f .slice9-delete-manifest.txt
           rm -rf .slice9
-          rm -f .github/workflows/apply-slice9-source.yml
+          git checkout HEAD -- .github/workflows/ci.yml
+          echo "apply=true" >> "$GITHUB_OUTPUT"
 
       - name: Validate reconstructed source
+        if: steps.source.outputs.apply == 'true'
         run: |
           npm install --no-audit --no-fund
           npm run check
 
       - name: Commit exact Slice Nine source
+        if: steps.source.outputs.apply == 'true'
         shell: bash
         run: |
           set -euo pipefail
