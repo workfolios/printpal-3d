@@ -207,7 +207,24 @@ test("persists bounded interpretation and an accepted Next-Test Plan", async ({ 
   await expect(page.getByText(/Next-Test Plan accepted/)).toBeVisible();
 
   await page.reload();
-  await expect(primaryVariable).toHaveValue("Orientation only");
+  await expect(page.getByRole("heading", { name: "Record Library" })).toBeVisible();
+  await page.getByRole("button", { name: "Open Record" }).click();
+  await expect(page.getByText(/Attempt 2/).first()).toBeVisible();
+
+  const reloadedComparison = page.getByRole("button", {
+    name: /open comparison|view comparison|comparison record/i,
+  });
+  await expect(reloadedComparison.first()).toBeVisible();
+  await reloadedComparison.first().click();
+  await expect(page.getByRole("heading", { name: "Deterministic Comparison" })).toBeVisible();
+  await page.getByRole("button", { name: "Interpret And Plan" }).click();
+  await expect(page.getByRole("heading", { name: "Interpret & Plan The Next Test" })).toBeVisible();
+
+  const reloadedPrimaryVariable = page
+    .locator("label")
+    .filter({ hasText: "Primary Variable" })
+    .locator("input");
+  await expect(reloadedPrimaryVariable).toHaveValue("Orientation only");
   await expect(page.getByText("ACCEPTED")).toBeVisible();
   await expect(page.getByText(/User-refined interpretation/)).toBeVisible();
 
