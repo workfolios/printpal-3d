@@ -10,6 +10,12 @@ import {
 import { nextTestPlanSchema } from "./nextTestPlanSchema";
 import { projectSchema } from "./projectSchema";
 
+export const appSettingExportRecordSchema = z.object({
+  key: z.string().trim().min(1),
+  value: jsonValueSchema,
+  updatedAt: isoDateTimeSchema,
+});
+
 export const projectExportPayloadSchema = z.object({
   project: projectSchema,
   attempts: z.array(attemptSchema),
@@ -22,7 +28,7 @@ export const fullBackupPayloadSchema = z.object({
   attempts: z.array(attemptSchema),
   comparisons: z.array(comparisonSchema),
   nextTestPlans: z.array(nextTestPlanSchema),
-  appSettings: z.record(jsonValueSchema).default({}),
+  appSettings: z.union([z.array(appSettingExportRecordSchema), z.record(jsonValueSchema)]).default([]),
 });
 
 const exportEnvelopeBaseSchema = z.object({
@@ -48,6 +54,7 @@ export const printPalExportEnvelopeSchema = z.discriminatedUnion("exportType", [
   fullBackupEnvelopeSchema,
 ]);
 
+export type AppSettingExportRecord = z.infer<typeof appSettingExportRecordSchema>;
 export type ProjectExportPayload = z.infer<typeof projectExportPayloadSchema>;
 export type FullBackupPayload = z.infer<typeof fullBackupPayloadSchema>;
 export type PrintPalExportEnvelope = z.infer<typeof printPalExportEnvelopeSchema>;

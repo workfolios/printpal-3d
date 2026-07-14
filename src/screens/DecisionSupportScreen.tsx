@@ -349,7 +349,7 @@ export function DecisionSupportScreen({
               <h2 className="mt-1 text-xl font-semibold text-[#333333]">Comparison Interpretation</h2>
               <p className="mt-2 text-xs leading-relaxed text-[#6F6F6F]">Use conditional language and keep alternate explanations visible.</p>
             </div>
-            <button type="button" disabled={!interpretationBusy || !record.isCurrent} onClick={generateInterpretation} className="inline-flex items-center justify-center gap-2 rounded bg-[#4B7270] px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50">
+            <button type="button" disabled={interpretationBusy || !record.isCurrent} onClick={generateInterpretation} className="inline-flex items-center justify-center gap-2 rounded bg-[#4B7270] px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-white disabled:cursor-not-allowed disabled:opacity-50">
               {interpretationBusy ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
               {interpretation ? "Regenerate" : "Generate Interpretation"}
             </button>
