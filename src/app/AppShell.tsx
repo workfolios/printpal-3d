@@ -66,10 +66,17 @@ export function AppShell() {
   const [route, setRoute] = useState<AppRoute>(RECORD_LIBRARY_ROUTE);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
+  const hasMountedRef = useRef(false);
   const { mode, setMode } = usePresentationMode();
 
   useEffect(() => {
     document.title = `${routeTitles[route.name]} · PrintPal 3D`;
+
+    if (!hasMountedRef.current) {
+      hasMountedRef.current = true;
+      return;
+    }
+
     const frame = window.requestAnimationFrame(() => mainRef.current?.focus({ preventScroll: true }));
     return () => window.cancelAnimationFrame(frame);
   }, [route]);
@@ -86,8 +93,7 @@ export function AppShell() {
   const navigate = (nextRoute: AppRoute) => {
     setRoute(nextRoute);
     setMobileMenuOpen(false);
-    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: 0, behavior: reducedMotion ? "auto" : "smooth" });
+    window.scrollTo({ top: 0, behavior: "auto" });
   };
 
   const navButtonClass = (active: boolean) =>
@@ -166,6 +172,11 @@ export function AppShell() {
     <div className="flex min-h-screen w-full flex-col bg-[#F8F7F2] font-sans text-[#333333]">
       <a
         href="#main-content"
+        onClick={(event) => {
+          event.preventDefault();
+          window.scrollTo({ top: 0, behavior: "auto" });
+          mainRef.current?.focus({ preventScroll: true });
+        }}
         className="fixed left-4 top-3 z-50 -translate-y-24 rounded bg-[#333333] px-4 py-2 text-sm font-semibold text-white transition focus:translate-y-0"
       >
         Skip to main content
@@ -173,7 +184,7 @@ export function AppShell() {
 
       <header className="sticky top-0 z-30 border-b border-[#E2E1DB] bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-4 px-4 py-3 md:px-6">
-          <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className="group min-w-0 text-left" aria-label="Open PrintPal Record Library">
+          <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className="group min-w-0 text-left" aria-label="Open Records Home">
             <span className="block text-2xl font-light tracking-tight text-[#4B7270] group-hover:text-[#3D5D5B]">
               PrintPal <span className="font-bold text-[#333333]">3D</span>
             </span>
