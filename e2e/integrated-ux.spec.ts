@@ -9,7 +9,7 @@ async function openPrimaryNavigation(page: Page, name: string | RegExp) {
   if (width < 1024) {
     await page.getByRole("button", { name: /navigation menu/ }).click();
   }
-  await page.getByRole("button", { name }).click();
+  await page.getByRole("button", { name, exact: typeof name === "string" }).click();
 }
 
 async function expectAccessibleStructure(page: Page, context: string) {
