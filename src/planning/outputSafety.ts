@@ -3,11 +3,11 @@ import type { PlanContent } from "../domain/types";
 const BLOCKED_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   {
     label: "prescriptive universal operating value",
-    pattern: /\b(?:set|use|print\s+at|heat\s+to|run\s+at|expose\s+for|wash\s+for|cure\s+for)\b.{0,32}\b\d+(?:\.\d+)?\s*(?:°\s*[cf]|c|f|mm\/s|mm\/min|seconds?|minutes?|hours?)\b/i,
+    pattern: /\b(?:set|use|print\s+at|heat\s+to|run\s+at|expose\b.{0,24}\bfor|wash\b.{0,24}\bfor|cure\b.{0,24}\bfor)\b.{0,32}\b\d+(?:\.\d+)?\s*(?:°\s*[cf]|c|f|mm\/s|mm\/min|seconds?|minutes?|hours?)\b/i,
   },
   {
     label: "electrical, firmware, or modification instruction",
-    pattern: /\b(?:wire|rewire|bypass|flash\s+firmware|disable\s+thermal|install\s+fire\s+suppression|modify\s+the\s+power)\b/i,
+    pattern: /\b(?:wire|rewire|electrical\s+repair|bypass|flash\s+firmware|disable\s+thermal|install\s+fire\s+suppression|modify\s+the\s+power)\b/i,
   },
   {
     label: "hazardous chemical procedure",
@@ -15,7 +15,7 @@ const BLOCKED_PATTERNS: Array<{ label: string; pattern: RegExp }> = [
   },
   {
     label: "unsupported performance or safety certification claim",
-    pattern: /\b(?:is|will\s+be|certified\s+as|guaranteed)\b.{0,24}\b(?:food[- ]safe|medical[- ]safe|load[- ]bearing|structurally\s+certified|chemically\s+resistant|watertight)\b/i,
+    pattern: /\b(?:is|will\s+be|certified\s+as|guaranteed|safe\s+for|approved\s+for|validated\s+for)\b.{0,36}\b(?:food[- ]safe|food\s+contact|medical[- ]safe|medical\s+use|load[- ]bearing|structural(?:ly)?\s+certified|chemical(?:ly)?\s+resistan(?:t|ce)|watertight)\b/i,
   },
   {
     label: "fabricated URL",

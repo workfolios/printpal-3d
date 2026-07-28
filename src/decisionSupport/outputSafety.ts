@@ -9,7 +9,7 @@ const PROHIBITED_PATTERNS: Array<[RegExp, string]> = [
   [/\b(?:bypass|disable)\b.{0,30}\b(?:safety|thermal|firmware|interlock)\b/i, "safety bypass guidance"],
   [/\b(?:rewire|mains voltage|electrical repair|distill solvent|recover solvent)\b/i, "hazardous procedural guidance"],
   [/https?:\/\//i, "fabricated or unverified URL"],
-  [/\b(?:certified|validated|safe for|approved for)\b.{0,40}\b(?:medical|food contact|load bearing|structural|chemical resistance|watertight)\b/i, "unsupported performance validation"],
+  [/\b(?:certified|validated|safe for|approved for)\b.{0,40}\b(?:medical(?: use)?|food contact|load bearing|structural|chemical resistance|watertight)\b/i, "unsupported performance validation"],
 ];
 
 function flattenInterpretation(content: ComparisonInterpretationContent): string[] {

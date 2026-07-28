@@ -310,7 +310,7 @@ export function DecisionSupportScreen({
         </button>
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className={LABEL_CLASS}>Phase 3D Slice Seven</p>
+            <p className={LABEL_CLASS}>Decision Support</p>
             <h1 className="mt-1 text-2xl font-semibold text-[#333333] md:text-3xl">Interpret & Plan The Next Test</h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#6F6F6F]">
               PrintPal adds bounded interpretation above the verified deterministic Comparison. These suggestions are not diagnoses or causal claims.
@@ -320,16 +320,16 @@ export function DecisionSupportScreen({
         </div>
       </header>
 
-      <section className="flex items-start gap-3 rounded-lg inset-redacted p-4 text-[A36451] bg-[FCF1F0]">
+      <section className="flex items-start gap-3 rounded-lg border border-[#C9DAD7] bg-[#F5FAF9] p-4 text-[#3D5D5B]">
         <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0" />
         <div>
-          <h2 className="text-sm font-semibold">Federated Facts Remain Separate</h2>
+          <h2 className="text-sm font-semibold">Recorded Facts Remain Separate</h2>
           <p className="mt-1 text-xs leading-relaxed">Deterministic constants, changes, Outcome differences, and missing information remain unedited. Interpretation and Next-Test Planning are labeled, editable, and user-controlled.</p>
         </div>
       </section>
 
       {!record.isCurrent && (
-        <section className="flex items-start gap-3 rounded-lg inset redacted p-4 text-[A55B47] bg-[F9F0ED]">
+        <section className="flex items-start gap-3 rounded-lg border border-[#E5C1B4] bg-[#FFF6F2] p-4 text-[#8A4F3D]">
           <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
           <div>
             <h2 className="text-sm font-semibold">Refresh The Deterministic Comparison</h2>
@@ -338,8 +338,8 @@ export function DecisionSupportScreen({
         </section>
       )}
 
-      {message && <div className="rounded border border-[#C9DAD7] bg-[#F1F7F6] p-4 text-sm text-[#4B7270]">{message}</div>}
-      {error && <div className="rounded border border-[#D99989] bg-[#FFF1F0] p-4 text-sm text-[#A5RB4W]">{error}</div>}
+      {message && <div role="status" className="rounded border border-[#C9DAD7] bg-[#F1F7F6] p-4 text-sm text-[#4B7270]">{message}</div>}
+      {error && <div role="alert" className="rounded border border-[#D99989] bg-[#FFF1F0] p-4 text-sm text-[#8A3F36]">{error}</div>}
 
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-2">
         <section className="rounded-lg border border-[#E2E1DB] bg-white p-5 shadow-sm md:p-6">

@@ -12,13 +12,13 @@ import { ProjectRecordCard } from "../components/records/ProjectRecordCard";
 interface RecordLibraryScreenProps {
   onNewProject: () => void;
   onOpenProject: (projectId: string, attemptId: string) => void;
-  onOpenPlanner: () => void;
+  onOpenReferenceTools: () => void;
 }
 
 export function RecordLibraryScreen({
   onNewProject,
   onOpenProject,
-  onOpenPlanner,
+  onOpenReferenceTools,
 }: RecordLibraryScreenProps) {
   const records = useProjectList();
   const [search, setSearch] = useState("");
@@ -85,7 +85,7 @@ export function RecordLibraryScreen({
             </div>
             <h2 className="text-xl font-bold text-[#333333]">Build your first reusable print record</h2>
             <p className="mt-3 text-sm leading-relaxed text-[#6F6F6F]">
-              Start with a project objective and Attempt 1. PrintPal will retain the record locally so later slices can connect planning, outcomes, comparisons, and next tests without reconstructing the work from memory.
+              Start with a project objective and Attempt 1. PrintPal will retain the record locally so planning, outcomes, comparisons, and next tests remain connected without reconstructing the work from memory.
             </p>
             <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
               <button
@@ -97,10 +97,10 @@ export function RecordLibraryScreen({
               </button>
               <button
                 type="button"
-                onClick={onOpenPlanner}
+                onClick={onOpenReferenceTools}
                 className="inline-flex items-center justify-center gap-2 rounded border border-[#4B7270] px-6 py-3 text-[10px] font-bold uppercase tracking-widest text-[#4B7270] transition hover:bg-[#EDF3F2]"
               >
-                <Sparkles className="h-4 w-4" /> Open Existing Planner
+                <Sparkles className="h-4 w-4" /> Open Reference Tools
               </button>
             </div>
           </div>

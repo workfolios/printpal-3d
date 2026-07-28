@@ -1,133 +1,138 @@
-import React from 'react';
-import { MaterialCompassFormData, MaterialCompassCard } from '../types';
+import { useState, type ChangeEvent, type FormEvent } from "react";
+import type { MaterialCompassCard, MaterialCompassFormData } from "../types";
 
 interface Props {
   onBack: () => void;
 }
 
-export function MaterialCompass({ onBack }: Props) {
-  const [formData, setFormData] = React.useState<MaterialCompassFormData>({
-    material: '',
-    purpose: '',
-    property: '',
-    concerns: ''
-  });
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [result, setResult] = React.useState<MaterialCompassCard | null>(null);
+const FIELD_CLASS = "mt-1.5 w-full rounded border border-[#D6D4CC] bg-white px-3 py-2.5 text-sm text-[#333333] outline-none transition focus:border-[#4B7270] focus:ring-2 focus:ring-[#4B7270]/30";
+const LABEL_CLASS = "block text-[10px] font-bold uppercase tracking-wider text-[#5F5F5F]";
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+export function MaterialCompass({ onBack }: Props) {
+  const [formData, setFormData] = useState<MaterialCompassFormData>({
+    material: "",
+    purpose: "",
+    property: "",
+    concerns: "",
+  });
+  const [isLoading, setIsLoading] = useState(false);
+  const [result, setResult] = useState<MaterialCompassCard | null>(null);
+  const [notice, setNotice] = useState("");
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
     setIsLoading(true);
     setResult(null);
+    setNotice("");
 
     try {
-      const response = await fetch('/api/generate-material-context', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+      const response = await fetch("/api/generate-material-context", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
       });
-      if (!response.ok) throw new Error('Server error');
+      if (!response.ok) throw new Error("Material context service unavailable");
       setResult(await response.json());
-    } catch (err: any) {
-      // rudimentary fallback
+    } catch {
+      setNotice("The AI service was unavailable. PrintPal created a labeled rules-based reference frame instead.");
       setResult({
-        questionsToVerify: ["Is your environment suitable?", "Have you checked ventilation requirements?"],
-        sourceDocsToCheck: ["Material Technical Data Sheet (TDS)", "Safety Data Sheet (SDS)"],
-        materialBehavior: ["Review manufacturer guidance for warp, shrinkage, and adhesion."],
-        documentationPrompts: ["Record ambient temperature.", "Note any odor or fumes."]
+        questionsToVerify: [
+          "Is the exact material or resin product known?",
+          "Are storage, drying, age, batch, or environmental conditions relevant?",
+        ],
+        sourceDocsToCheck: [
+          "Manufacturer material guide and verified profile",
+          "Technical Data Sheet and Safety Data Sheet",
+        ],
+        materialBehavior: [
+          "Review manufacturer guidance for dimensional behavior, adhesion, moisture sensitivity, and post-processing.",
+        ],
+        documentationPrompts: [
+          "Record the exact material product and condition.",
+          "Record the printer, slicer profile reference, and observed environment.",
+        ],
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    setFormData((current) => ({ ...current, [event.target.name]: event.target.value }));
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-white rounded-lg shadow-sm border border-[#E2E1DB]">
-      <div className="p-4 bg-[#4B7270] text-white flex justify-between items-center rounded-t-lg shrink-0">
-        <h2 className="text-xs font-bold uppercase tracking-wider">Materials Compass</h2>
-        <button type="button" onClick={onBack} className="text-[10px] uppercase font-bold border border-white/30 px-3 py-1 rounded hover:bg-white/10 transition-colors">
-          Back to Dashboard
+    <section className="mx-auto w-full max-w-7xl overflow-hidden rounded-lg border border-[#E2E1DB] bg-white shadow-sm" aria-busy={isLoading}>
+      <header className="flex flex-col gap-3 bg-[#4B7270] p-4 text-white sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <p className="text-[9px] font-bold uppercase tracking-widest text-white/75">Standalone Reference Tool</p>
+          <h1 className="mt-1 text-lg font-semibold">Materials Compass</h1>
+        </div>
+        <button type="button" onClick={onBack} className="rounded border border-white/40 px-3 py-2 text-[10px] font-bold uppercase tracking-widest transition hover:bg-white/10">
+          Back To Reference Tools
         </button>
-      </div>
+      </header>
 
-      <div className="flex-1 overflow-hidden flex flex-col lg:flex-row">
-        <div className="w-full lg:w-1/3 border-r border-[#E2E1DB] p-6 overflow-y-auto">
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#8A8A8A] mb-1">What material or resin are you considering?</label>
-              <input required name="material" value={formData.material} onChange={handleChange} placeholder="e.g. ABS, Tough Resin..." className="w-full text-xs p-2.5 border border-[#E2E1DB] rounded focus:ring-1 focus:ring-[#4B7270] outline-none" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#8A8A8A] mb-1">What is the print purpose?</label>
-              <input required name="purpose" value={formData.purpose} onChange={handleChange} placeholder="e.g. Outdoor mounting bracket" className="w-full text-xs p-2.5 border border-[#E2E1DB] rounded focus:ring-1 focus:ring-[#4B7270] outline-none" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#8A8A8A] mb-1">What property matters most?</label>
-              <input required name="property" value={formData.property} onChange={handleChange} placeholder="e.g. UV Resistance, Impact strength" className="w-full text-xs p-2.5 border border-[#E2E1DB] rounded focus:ring-1 focus:ring-[#4B7270] outline-none" />
-            </div>
-            <div>
-              <label className="block text-[10px] uppercase font-bold text-[#8A8A8A] mb-1">Any environmental or safety concerns?</label>
-              <textarea name="concerns" value={formData.concerns} onChange={handleChange} rows={3} placeholder="e.g. Will be in direct sunlight, printing in bedroom..." className="w-full text-xs p-2.5 border border-[#E2E1DB] rounded focus:ring-1 focus:ring-[#4B7270] outline-none resize-none" />
-            </div>
-            
-            <button disabled={isLoading} type="submit" className="w-full bg-[#4B7270] text-white py-3 rounded text-[10px] uppercase font-bold tracking-widest hover:bg-[#3D5D5B] transition-colors disabled:opacity-50">
-              {isLoading ? 'Advising...' : 'Get Material Context'}
+      <div className="grid lg:grid-cols-[minmax(0,420px)_minmax(0,1fr)]">
+        <div className="border-b border-[#E2E1DB] p-5 lg:border-b-0 lg:border-r md:p-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <label htmlFor="material-compass-material" className={LABEL_CLASS}>
+              Material Or Resin
+              <input id="material-compass-material" required name="material" value={formData.material} onChange={handleChange} placeholder="ABS, PETG, Tough Resin" className={FIELD_CLASS} />
+            </label>
+            <label htmlFor="material-compass-purpose" className={LABEL_CLASS}>
+              Print Purpose
+              <input id="material-compass-purpose" required name="purpose" value={formData.purpose} onChange={handleChange} placeholder="Outdoor mounting bracket" className={FIELD_CLASS} />
+            </label>
+            <label htmlFor="material-compass-property" className={LABEL_CLASS}>
+              Priority Property
+              <input id="material-compass-property" required name="property" value={formData.property} onChange={handleChange} placeholder="UV resistance or impact strength" className={FIELD_CLASS} />
+            </label>
+            <label htmlFor="material-compass-concerns" className={LABEL_CLASS}>
+              Environmental Or Safety Context
+              <textarea id="material-compass-concerns" name="concerns" value={formData.concerns} onChange={handleChange} rows={4} placeholder="Sunlight exposure, indoor location, unknown ventilation, or end-use constraints" className={`${FIELD_CLASS} resize-y`} />
+            </label>
+            <button disabled={isLoading} type="submit" className="w-full rounded bg-[#4B7270] py-3 text-[10px] font-bold uppercase tracking-widest text-white transition hover:bg-[#3D5D5B] disabled:cursor-not-allowed disabled:opacity-50">
+              {isLoading ? "Creating Context…" : "Create Material Context"}
             </button>
           </form>
         </div>
-        
-        <div className="w-full lg:w-2/3 p-6 overflow-y-auto bg-[#F8F7F2]">
+
+        <div className="min-h-[420px] bg-[#F8F7F2] p-5 md:p-6" aria-live="polite">
+          {notice && <div role="status" className="mb-5 rounded border border-[#E9D9B7] bg-[#FFFCF0] p-4 text-xs leading-5 text-[#7D6B45]">{notice}</div>}
           {isLoading ? (
-            <div className="flex justify-center items-center h-full text-[10px] uppercase text-[#8A8A8A] tracking-widest animate-pulse">Generating advisory context...</div>
+            <div className="grid min-h-80 place-items-center text-center text-[10px] font-bold uppercase tracking-widest text-[#6F6F6F]">Creating advisory context…</div>
           ) : result ? (
-            <div className="space-y-6 text-[#333333]">
-              <h3 className="text-sm font-bold uppercase mb-4 border-b border-[#E2E1DB] pb-2">Material Context: {formData.material}</h3>
-              
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <h4 className="text-[10px] font-bold text-[#4B7270] uppercase tracking-wider mb-2">Questions To Verify</h4>
-                  <ul className="list-disc ml-4 space-y-1 text-xs">
-                    {result.questionsToVerify.map((q, i) => <li key={i}>{q}</li>)}
-                  </ul>
-                </div>
-                
-                <div>
-                  <h4 className="text-[10px] font-bold text-[#4B7270] uppercase tracking-wider mb-2">Source Docs To Check</h4>
-                  <ul className="list-disc ml-4 space-y-1 text-xs">
-                    {result.sourceDocsToCheck.map((s, i) => <li key={i}>{s}</li>)}
-                  </ul>
-                </div>
+            <div className="mx-auto max-w-3xl space-y-6 text-[#333333]">
+              <h2 className="border-b border-[#D6D4CC] pb-3 text-sm font-bold uppercase tracking-widest">Material Context: {formData.material}</h2>
+              <div className="grid gap-6 md:grid-cols-2">
+                <ListBlock title="Questions To Verify" values={result.questionsToVerify} />
+                <ListBlock title="Source Documents To Check" values={result.sourceDocsToCheck} />
               </div>
-
-              <div>
-                <h4 className="text-[10px] font-bold text-[#4B7270] uppercase tracking-wider mb-2">Material Behavior Considerations</h4>
-                <ul className="list-disc ml-4 space-y-1 text-xs">
-                  {result.materialBehavior.map((b, i) => <li key={i}>{b}</li>)}
-                </ul>
-              </div>
-              
-              <div>
-                <h4 className="text-[10px] font-bold text-[#4B7270] uppercase tracking-wider mb-2">Documentation Prompts</h4>
-                <ul className="list-disc ml-4 space-y-1 text-xs">
-                  {result.documentationPrompts.map((d, i) => <li key={i}>{d}</li>)}
-                </ul>
-              </div>
-
-              <div className="bg-[#FFFCF0] border border-[#F5EAD2] p-3 rounded text-[9px] leading-tight text-[#7D6B45] mt-6">
-                 <p><strong>SAFETY NOTE:</strong> PrintPal 3D is a planning and documentation aid only. Always verify printer settings, material handling, post-processing, ventilation, and safety practices against your printer manual, slicer documentation, manufacturer guidance, Technical Data Sheets, and Safety Data Sheets.</p>
+              <ListBlock title="Material Behavior Considerations" values={result.materialBehavior} />
+              <ListBlock title="Documentation Prompts" values={result.documentationPrompts} />
+              <div className="rounded border border-[#F5EAD2] bg-[#FFFCF0] p-4 text-[10px] leading-5 text-[#7D6B45]">
+                <strong>Advisory boundary:</strong> Verify material handling, printer compatibility, post-processing, ventilation, and end-use claims against the exact manufacturer guidance, TDS, SDS, slicer documentation, and technical validation applicable to the product.
               </div>
             </div>
           ) : (
-            <div className="flex justify-center items-center h-full text-[10px] uppercase text-[#8A8A8A] tracking-widest text-center max-w-sm mx-auto">
-              Provide context on the left to generate material handling and safety recommendations according to manufacturer baselines.
+            <div className="grid min-h-80 place-items-center text-center text-sm leading-6 text-[#6F6F6F]">
+              <p className="max-w-md">Provide material, purpose, and priority context to create a source-aware checklist. This standalone tool does not save the result to a Project.</p>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </section>
+  );
+}
+
+function ListBlock({ title, values }: { title: string; values: string[] }) {
+  return (
+    <section>
+      <h3 className="text-[10px] font-bold uppercase tracking-wider text-[#4B7270]">{title}</h3>
+      <ul className="mt-2 space-y-2 text-sm leading-5">
+        {values.map((value) => <li key={value} className="rounded border border-[#E2E1DB] bg-white px-3 py-2">{value}</li>)}
+      </ul>
+    </section>
   );
 }

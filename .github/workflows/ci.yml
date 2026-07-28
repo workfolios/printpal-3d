@@ -12,7 +12,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
@@ -22,8 +22,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --no-audit --no-fund
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Install governed browser matrix
+        run: npx playwright install --with-deps chromium firefox webkit
       - name: Validate types, tests, and production build
         shell: bash
         run: |
@@ -32,7 +32,7 @@ jobs:
           status=$?
           cat validation.log
           exit $status
-      - name: Validate desktop and mobile record workflow
+      - name: Validate integrated UX, accessibility, safety, and regression workflows
         shell: bash
         env:
           CI: true
@@ -53,7 +53,7 @@ jobs:
             -x 'playwright-report/*' \
             -x 'test-results/*' \
             -x 'printpal-source-snapshot.zip'
-      - name: Preserve validation logs and source snapshot
+      - name: Preserve validation logs, browser evidence, and source snapshot
         if: always()
         uses: actions/upload-artifact@v4
         with:

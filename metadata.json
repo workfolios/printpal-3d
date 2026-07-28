@@ -1,6 +1,6 @@
 {
-  "name": "PrintPal 3D V0.3 Lean Product Simulation Build",
-  "description": "AI-assisted 3D printing workflow utility prototype for pre-print planning, material context review, text-only failure review, lab-note export, and advisory documentation support.",
+  "name": "PrintPal 3D V0.4 Decision-Memory Product Simulation",
+  "description": "Local-first 3D printing decision-memory and lab-record utility for planning, outcomes, attempt comparison, bounded interpretation, next-test planning, and user-controlled export and recovery.",
   "requestFramePermissions": [],
   "majorCapabilities": [
     "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"

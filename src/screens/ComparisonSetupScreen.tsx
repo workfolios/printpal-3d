@@ -80,7 +80,7 @@ export function ComparisonSetupScreen({
         <div className="flex items-start gap-3">
           <GitCompareArrows className="mt-1 h-6 w-6 text-[#4B7270]" />
           <div>
-            <p className="text-[9px] font-bold uppercase tracking-widest text-[#8A8A8A]">Phase 3D Slice Six</p>
+            <p className="text-[9px] font-bold uppercase tracking-widest text-[#8A8A8A]">Deterministic Comparison</p>
             <h1 className="mt-1 text-2xl font-light tracking-tight text-[#333333] md:text-3xl">Compare Attempt {attempt.attemptNumber}</h1>
             <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#6F6F6F]">Select another evaluated Attempt from {project.title}. PrintPal will compare recorded fields and Outcomes deterministically and store the factual record locally.</p>
           </div>
