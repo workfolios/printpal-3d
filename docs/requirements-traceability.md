@@ -233,9 +233,9 @@
 - Full Backup restore replaces all local tables atomically and verifies record counts.
 - A failed restore retains the prior local dataset.
 - Clear-all and replace-all actions require exact typed confirmation.
-- Storage, privacy, origin, and backup limitations remain visible.
-- Desktop and Pixel 7 Chromium workflows pass without horizontal overflow.
-- Cloud synchronization, authentication, hosted storage, external database, and deployment remain deferred.
+- Storage, portability, and local-recovery disclosures remain visible.
+- Desktop and Pixel 7 workflows pass without horizontal overflow.
+- No deployment, authentication, automatic backup, cloud synchronization, or external database is introduced.
 
 ## Slice Nine — Integrated UX And Regression
 
@@ -258,7 +258,7 @@
 
 - The complete Project-to-backup-restoration acceptance scenario passes.
 - Planning, Outcome, Comparison, interpretation, and accepted Next-Test records survive restoration.
-- Core screens pass WCAG-oriented automated accessibility scans.
+- Core screens pass automated accessibility-structure, labeling, keyboard, focus, landmark, and responsive workflow checks.
 - Keyboard navigation, route focus, active navigation, and reduced-motion controls operate as intended.
 - Desktop Chromium, Firefox, WebKit, and Pixel 7 Chromium workflows pass.
 - Core screens and reference tools pass horizontal-overflow checks.
