@@ -66,16 +66,14 @@ export function AppShell() {
   const [route, setRoute] = useState<AppRoute>(RECORD_LIBRARY_ROUTE);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const mainRef = useRef<HTMLElement>(null);
-  const hasMountedRef = useRef(false);
+  const previousRouteRef = useRef<AppRoute>(route);
   const { mode, setMode } = usePresentationMode();
 
   useEffect(() => {
     document.title = `${routeTitles[route.name]} · PrintPal 3D`;
 
-    if (!hasMountedRef.current) {
-      hasMountedRef.current = true;
-      return;
-    }
+    if (previousRouteRef.current === route) return;
+    previousRouteRef.current = route;
 
     const frame = window.requestAnimationFrame(() => mainRef.current?.focus({ preventScroll: true }));
     return () => window.cancelAnimationFrame(frame);
@@ -184,7 +182,7 @@ export function AppShell() {
 
       <header className="sticky top-0 z-30 border-b border-[#E2E1DB] bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-[1500px] items-center justify-between gap-4 px-4 py-3 md:px-6">
-          <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className="group min-w-0 text-left" aria-label="Open Records Home">
+          <button type="button" onClick={() => navigate(RECORD_LIBRARY_ROUTE)} className="group min-w-0 text-left" aria-label="PrintPal Home">
             <span className="block text-2xl font-light tracking-tight text-[#4B7270] group-hover:text-[#3D5D5B]">
               PrintPal <span className="font-bold text-[#333333]">3D</span>
             </span>
