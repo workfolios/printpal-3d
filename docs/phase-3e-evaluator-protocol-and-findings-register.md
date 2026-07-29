@@ -261,3 +261,50 @@ Select one:
 | Product / Governance Review |  |  |  |  |
 
 Phase 3F deployment evaluation remains separately governed and is not authorized by completion of this record alone.
+
+## 11.0 Internal Technical Evidence Pass — July 29, 2026
+
+### 11.1 Evidence Status
+
+The internal source, validation, and relationship-integrity review is complete for the initial Phase 3E pass.
+
+- Phase 3E activation validation run #124 completed successfully.
+- The run contained one WebKit retry involving a user-edited Next-Test Plan field that did not persist on the first execution.
+- The accepted run #122 contained one separate WebKit retry involving edited interpretation text that was absent after backup restoration on the first execution.
+- Source review identified one P1 and four P2 correction-required findings.
+- No product-source correction has been authorized or applied.
+
+### 11.2 Populated Findings Register
+
+| ID | Severity | Dimension | Workflow Stage | Finding | Evidence | Recommendation | Disposition |
+|---|---|---|---|---|---|---|---|
+| 3E-001 | P1 | Deterministic Integrity / Persistence | Outcome edit → Comparison refresh → Decision Support | A refreshed Comparison can retain and reload a stale Next-Test Plan derived from superseded facts. | Comparison refresh does not transact on or invalidate `nextTestPlans`; Decision Support falls back by `originatingComparisonId`. | Invalidate linked plans and clear Attempt plan references transactionally; add refresh-after-plan regression coverage. | Confirmed — Correction Required |
+| 3E-002 | P2 | Persistence And Recovery / AI Trust | Interpretation and Next-Test editing | User edits can be lost across reload or backup/restore because reactive rehydration and asynchronous saves can race. | Independent WebKit retries in runs #122 and #124 lost edited interpretation or primary-variable values on first execution. | Add dirty/pending state, controlled rehydration, current-value submission, write flushing, and first-pass persistence tests. | Confirmed — Correction Required |
+| 3E-003 | P2 | Safety And Scope / AI Trust | Reference Tools | Failure Review and Materials Compass bypass governed schemas, safety validators, envelopes, origin labels, and route-level safety tests. | Legacy routes directly parse model JSON and return HTTP 200 fallback objects without origin metadata. | Make deterministic-only or apply full governed request, response, safety, origin, and regression controls. | Confirmed — Correction Required |
+| 3E-004 | P2 | Deterministic Integrity | Attempt Comparison | Generic token overlap can misclassify undeclared material changes as planned. | `material` appears as an alias across color, manufacturer, product, batch, age, storage, and condition descriptors. | Use structured field identifiers or specific aliases; exclude generic category-token matches; add negative tests. | Confirmed — Correction Required |
+| 3E-005 | P2 | Model/API Stability | Gemini-backed routes | The hardcoded `gemini-2.5-flash` model is scheduled for shutdown October 16, 2026. | Official Google Gemini deprecations schedule recommends `gemini-3.6-flash`. | Centralize model config and complete controlled replacement-model validation before Phase 3F. | Confirmed — Correction Required Before Phase 3F |
+| 3E-006 | P3 | Import Integrity | Project and Full Backup import | Multi-Attempt `parentAttemptId` cycles are not detected before write. | Schema rejects self-parenting and import verifies references, but no directed-cycle validation was found. | Add graph-cycle validation and import tests. | Confirmed — Correction Candidate |
+| 3E-007 | P3 | Performance | Application load | Main JavaScript chunk is 612.20 kB minified. | Vite advisory threshold is 500 kB. | Evaluate lazy loading and chunking during deployment readiness. | Deferred With Rationale |
+| 3E-008 | P3 | Local-First / Privacy | Application load | Google Fonts introduce an external request into the local-first experience. | `src/index.css` imports from `fonts.googleapis.com`. | Decide on system-font or self-hosted posture before deployment. | Deferred With Rationale |
+| 3E-009 | P3 | Security / Operations | Hosted runtime | Rate limiting, security headers, abuse controls, and operational observability are not established. | Current Express build reflects a controlled simulation rather than a hardened hosted service. | Make deployment hardening an explicit Phase 3F gate. | Deferred To Phase 3F Gate |
+
+### 11.3 Interim Consolidated Assessment
+
+**Strongest validated product behavior:** The accepted checkpoint provides a coherent local-first record chain and passes the governed functional matrix under normal execution.
+
+**Primary integrity risk:** A Next-Test Plan can outlive and be re-associated with a refreshed Comparison after the underlying Outcome evidence changes.
+
+**Primary trust risk:** Decision-support edits have shown first-execution persistence failures in WebKit across both reload and backup/restore workflows.
+
+**Primary safety-control risk:** Non-persistent Reference Tools do not share the modern persistent workflow’s schema, output-safety, origin, or route-test controls.
+
+**Primary deployment constraint:** The current Gemini endpoint has a published shutdown date and must be migrated and revalidated before Phase 3F can responsibly authorize deployment.
+
+### 11.4 Interim Phase 3E Recommendation
+
+- Selected recommendation: **Correct And Re-Review**.
+- Unresolved P1 findings: `3E-001`.
+- Unresolved P2 findings: `3E-002`, `3E-003`, `3E-004`, `3E-005`.
+- Phase 3F readiness: **Not Ready**.
+- External evaluator work: may continue for workflow utility and logging-burden evidence, but cannot clear the technical stop condition.
+- Product-source correction: requires separate explicit authorization.
