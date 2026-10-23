@@ -1,0 +1,15 @@
+{
+  "name": "PrintPal 3D Full Runtime",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+  "forwardPorts": [3000],
+  "portsAttributes": {
+    "3000": {
+      "label": "PrintPal 3D Full Runtime",
+      "onAutoForward": "openBrowser",
+      "protocol": "http"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/bootstrap-remote.sh",
+  "postStartCommand": "bash .devcontainer/start-remote.sh",
+  "postAttachCommand": "bash .devcontainer/start-remote.sh"
+}
