@@ -43,9 +43,40 @@ const ai = new GoogleGenAI({
 
 async function startServer() {
   const app = express();
-  const PORT = 3000;
+  const PORT = Number(process.env.PORT || 3000);
 
   app.use(express.json());
+
+  app.get("/api/runtime-status", (_req, res) => {
+    const aiConfigured = Boolean(process.env.GEMINI_API_KEY?.trim());
+    const runtime = process.env.CODESPACES === "true" || Boolean(process.env.CODESPACE_NAME)
+      ? "CODESPACES"
+      : "SERVER";
+
+    res.setHeader("Cache-Control", "no-store");
+    res.json({
+      ok: true,
+      runtime,
+      aiConfigured,
+      aiMode: aiConfigured ? "AI_AVAILABLE" : "STANDARD_GUIDANCE",
+      productVersion: "V0.4",
+      sourceCheckpoint: "v0.4-slice-9-integrated-ux-regression",
+      models: {
+        planning: PLANNING_MODEL,
+        decisionSupport: DECISION_SUPPORT_MODEL,
+        referenceTools: "gemini-2.5-flash",
+      },
+      versions: {
+        planningPrompt: PLANNING_PROMPT_VERSION,
+        planningRules: PLANNING_RULES_VERSION,
+        interpretationPrompt: COMPARISON_INTERPRETATION_PROMPT_VERSION,
+        interpretationRules: COMPARISON_INTERPRETATION_RULES_VERSION,
+        nextTestPrompt: NEXT_TEST_PROMPT_VERSION,
+        nextTestRules: NEXT_TEST_RULES_VERSION,
+      },
+      checkedAt: new Date().toISOString(),
+    });
+  });
 
   app.post("/api/generate-plan", async (req, res) => {
     const parsedRequest = planningRequestSchema.safeParse(req.body || {});
