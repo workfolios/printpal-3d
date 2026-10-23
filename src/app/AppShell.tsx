@@ -24,6 +24,7 @@ import { PlanningRecordScreen } from "../screens/PlanningRecordScreen";
 import { RecordLibraryScreen } from "../screens/RecordLibraryScreen";
 import { ReferenceToolsScreen } from "../screens/ReferenceToolsScreen";
 import { SettingsDataScreen } from "../screens/SettingsDataScreen";
+import { RuntimeStatusBadge } from "../components/RuntimeStatusBadge";
 import type { AppRoute } from "./routes";
 import { NEW_PROJECT_ROUTE, RECORD_LIBRARY_ROUTE } from "./routes";
 
@@ -193,6 +194,8 @@ export function AppShell() {
             {primaryNavigation}
           </nav>
 
+          <RuntimeStatusBadge className="hidden md:flex" />
+
           <div className="hidden items-center gap-1 rounded border border-[#D6D4CC] bg-[#F8F7F2] p-1 md:flex">
             {presentationModeControls}
           </div>
@@ -214,6 +217,7 @@ export function AppShell() {
             <nav className="grid grid-cols-2 gap-2" aria-label="Mobile primary navigation">
               {primaryNavigation}
             </nav>
+            <RuntimeStatusBadge className="mt-4 flex md:hidden" />
             <div className="mt-4 flex items-center justify-between rounded border border-[#D6D4CC] bg-[#F8F7F2] p-2">
               <span className="text-[9px] font-bold uppercase tracking-widest text-[#6F6F6F]">Presentation Mode</span>
               {presentationModeControls}
